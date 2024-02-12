@@ -26,15 +26,13 @@ package net.nextcluster.manager;
 
 import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.resource.group.NextGroup;
-import net.nextcluster.manager.resources.group.NextGroupWatcher;
 import net.nextcluster.manager.networking.NettyServerTransmitter;
+import net.nextcluster.manager.resources.group.NextGroupWatcher;
 import net.nextcluster.manager.resources.player.ManagerCloudPlayerProvider;
 import org.springframework.boot.Banner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-
-import java.util.Arrays;
 
 @SpringBootApplication(exclude = {SecurityAutoConfiguration.class})
 public class NextClusterManager extends NextCluster {
@@ -45,33 +43,22 @@ public class NextClusterManager extends NextCluster {
     }
 
     public static void main(String[] args) {
+        long startup = System.currentTimeMillis();
         new SpringApplicationBuilder(NextClusterManager.class)
-                .bannerMode(Banner.Mode.OFF)
-                .run(args);
+            .bannerMode(Banner.Mode.OFF)
+            .run(args);
 
         var client = NextCluster.instance().kubernetes();
         LOGGER.info("Applying custom resources...");
+        Initializer.initialize(client);
         client.apiextensions()
             .v1()
             .customResourceDefinitions()
             .load(ClassLoader.getSystemClassLoader().getResourceAsStream("models/nextgroup.yml"))
             .serverSideApply();
-        client.load(ClassLoader.getSystemClassLoader().getResourceAsStream("cluster.yml"))
-                .inNamespace(client.getNamespace())
-                .serverSideApply();
-        for (String requirement : Arrays.asList("registry.yml", "assembler.yml")) {
-            client.load(ClassLoader.getSystemClassLoader().getResourceAsStream("requirements/" + requirement))
-                .inNamespace(client.getNamespace())
-                .resources()
-                .forEach(item -> {
-                    final var resource = item.get();
-                    if (resource == null) {
-                        item.serverSideApply();
-                    }
-                });
-        }
         LOGGER.info("Custom resources successfully applied!");
         client.resources(NextGroup.class).inform(new NextGroupWatcher());
+        LOGGER.info("NextClusterManager started in " + (System.currentTimeMillis() - startup) + "ms!");
     }
 
 }

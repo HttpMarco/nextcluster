@@ -3,6 +3,34 @@ kind: Namespace
 metadata:
   name: nextcluster
 ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: manager
+  namespace: nextcluster
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: manager-role
+rules:
+  - apiGroups: [ "", "apps", "apiextensions.k8s.io" ]
+    resources: [ "pods", "services", "configmaps", "secrets", "customresourcedefinitions" ]
+    verbs: [ "get", "list", "watch", "create", "update", "delete" ]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: manager-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: manager
+    namespace: nextcluster
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -18,9 +46,11 @@ spec:
       labels:
         app: manager
     spec:
+      serviceAccountName: manager
       containers:
         - name: manager
           image: registry.nextcluster.net/manager:latest
+          imagePullPolicy: Always
           env:
             - name: KUBERNETES_AUTH_TRYKUBECONFIG
               value: "false"
