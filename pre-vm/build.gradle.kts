@@ -30,7 +30,7 @@ dependencies {
     api(project(":driver"))
     implementation(project(":driver"))
     implementation(libs.log4j)
-    implementation("com.lmax:disruptor:3.4.2")
+    implementation("com.lmax:disruptor:4.0.0")
 }
 
 tasks.shadowJar {
