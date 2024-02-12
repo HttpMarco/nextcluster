@@ -6,7 +6,7 @@ metadata:
   labels:
     app: registry-data
 spec:
-  storageClassName: manual
+  storageClassName: local-storage
   capacity:
     storage: 10Gi
   claimRef:

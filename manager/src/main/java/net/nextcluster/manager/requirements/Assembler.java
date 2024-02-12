@@ -30,36 +30,35 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 
 import java.util.Map;
 
-public class Registry {
+public class Assembler {
 
     public static void initialize(KubernetesClient client) {
         createPersistentVolume(client);
         createPersistentVolumeClaim(client);
         createDeployment(client);
-        createService(client);
     }
 
     private static void createPersistentVolume(KubernetesClient client) {
         // @formatter:off
         final var resource = new PersistentVolumeBuilder()
-                .withNewMetadata()
-                    .withName("registry-data")
+            .withNewMetadata()
+                .withName("assembler-data")
+                .withNamespace(client.getNamespace())
+                .addToLabels("app", "assembler-data")
+            .endMetadata()
+            .withNewSpec()
+                .withStorageClassName("local-storage")
+                .withCapacity(Map.of("storage", new Quantity("10Gi")))
+                .withAccessModes("ReadWriteOnce")
+                .withPersistentVolumeReclaimPolicy("Retain")
+                .withNewHostPath()
+                    .withPath("/srv/nextcluster/images")
+                .endHostPath()
+                .withNewClaimRef()
+                    .withName("assembler-data")
                     .withNamespace(client.getNamespace())
-                    .addToLabels("app", "registry-data")
-                .endMetadata()
-                .withNewSpec()
-                    .withStorageClassName("local-storage")
-                    .withCapacity(Map.of("storage", new Quantity("10Gi")))
-                    .withAccessModes("ReadWriteOnce")
-                    .withPersistentVolumeReclaimPolicy("Retain")
-                    .withNewHostPath()
-                        .withPath("/srv/nextcluster/registry")
-                    .endHostPath()
-                    .withNewClaimRef()
-                        .withName("registry-data")
-                        .withNamespace(client.getNamespace())
-                    .endClaimRef()
-                .endSpec()
+                .endClaimRef()
+            .endSpec()
             .build();
         // @formatter:on
         final var volume = client.persistentVolumes().resource(resource);
@@ -71,26 +70,26 @@ public class Registry {
     private static void createPersistentVolumeClaim(KubernetesClient client) {
         // @formatter:off
         final var resource = new PersistentVolumeClaimBuilder()
-                .withNewMetadata()
-                    .withName("registry-data")
-                    .withNamespace(client.getNamespace())
-                .endMetadata()
-                .withNewSpec()
-                    .withNewSelector()
-                        .addToMatchLabels("app", "registry-data")
-                    .endSelector()
-                    .withStorageClassName("local-storage")
-                    .withAccessModes("ReadWriteOnce")
-                    .withVolumeName("registry-data")
-                    .withResources(new VolumeResourceRequirementsBuilder()
-                        .addToRequests("storage", new Quantity("10Gi"))
-                        .build())
-                .endSpec()
+            .withNewMetadata()
+                .withName("assembler-data")
+                .withNamespace(client.getNamespace())
+            .endMetadata()
+            .withNewSpec()
+                .withStorageClassName("local-storage")
+                .withNewSelector()
+                    .withMatchLabels(Map.of("app", "assembler-data"))
+                .endSelector()
+                .withAccessModes("ReadWriteOnce")
+                .withResources(new VolumeResourceRequirementsBuilder()
+                    .addToRequests("storage", new Quantity("20Gi"))
+                    .build())
+                .withVolumeName("assembler-data")
+            .endSpec()
             .build();
         // @formatter:on
-        final var volume = client.persistentVolumeClaims().resource(resource);
-        if (volume.get() == null) {
-            volume.serverSideApply();
+        final var claim = client.persistentVolumeClaims().resource(resource);
+        if (claim.get() == null) {
+            claim.serverSideApply();
         }
     }
 
@@ -98,34 +97,41 @@ public class Registry {
         // @formatter:off
         final var resource = new DeploymentBuilder()
             .withNewMetadata()
-                .withName("registry")
+                .withName("assembler")
                 .withNamespace(client.getNamespace())
             .endMetadata()
             .withNewSpec()
                 .withReplicas(1)
                 .withNewSelector()
-                    .addToMatchLabels("app", "registry")
+                    .addToMatchLabels("app", "assembler")
                 .endSelector()
                 .withNewTemplate()
                     .withNewMetadata()
-                        .addToLabels("app", "registry")
+                        .addToLabels("app", "assembler")
                     .endMetadata()
                     .withNewSpec()
                         .addNewContainer()
-                            .withName("registry")
-                            .withImage("registry:2.8.3")
-                            .addNewPort()
-                                .withContainerPort(5000)
-                            .endPort()
-                        .addNewVolumeMount()
-                            .withName("registry-data")
-                            .withMountPath("/var/lib/registry")
-                        .endVolumeMount()
+                            .withName("assembler")
+                            .withImage("registry.nextcluster.net/assembler:latest")
+                            .addNewVolumeMount()
+                                .withName("docker-socket")
+                                .withMountPath("/var/run/docker.sock")
+                            .endVolumeMount()
+                            .addNewVolumeMount()
+                                .withName("assembler-data")
+                                .withMountPath("/images")
+                            .endVolumeMount()
                         .endContainer()
                         .addNewVolume()
-                            .withName("registry-data")
+                            .withName("docker-socket")
+                            .withNewHostPath()
+                                .withPath("/var/run/docker.sock")
+                            .endHostPath()
+                        .endVolume()
+                        .addNewVolume()
+                            .withName("assembler-data")
                             .withNewPersistentVolumeClaim()
-                                .withClaimName("registry-data")
+                                .withClaimName("assembler-data")
                             .endPersistentVolumeClaim()
                         .endVolume()
                     .endSpec()
@@ -139,27 +145,4 @@ public class Registry {
         }
     }
 
-    private static void createService(KubernetesClient client) {
-        // @formatter:off
-        final var resource = new ServiceBuilder()
-            .withNewMetadata()
-                .withName("registry")
-                .withNamespace(client.getNamespace())
-            .endMetadata()
-            .withNewSpec()
-                .withClusterIP("10.99.214.62")
-                .addNewPort()
-                    .withPort(5000)
-                    .withTargetPort(new IntOrString(5000))
-                    .withProtocol("TCP")
-                .endPort()
-                .withSelector(Map.of("app", "registry"))
-            .endSpec()
-            .build();
-        // @formatter:on
-        final var service = client.services().resource(resource);
-        if (service.get() == null) {
-            service.serverSideApply();
-        }
-    }
 }

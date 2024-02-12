@@ -29,6 +29,7 @@ import io.fabric8.kubernetes.api.model.rbac.RoleBindingBuilder;
 import io.fabric8.kubernetes.api.model.rbac.RoleBuilder;
 import io.fabric8.kubernetes.api.model.rbac.SubjectBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import net.nextcluster.manager.requirements.Assembler;
 import net.nextcluster.manager.requirements.Registry;
 
 class Initializer {
@@ -41,6 +42,7 @@ class Initializer {
         createRoleBinding(client);
 
         Registry.initialize(client);
+        Assembler.initialize(client);
     }
 
     private static void createServiceAccount(KubernetesClient client) {
@@ -60,7 +62,7 @@ class Initializer {
         final var role = new RoleBuilder()
             .withNewMetadata()
                 .withName(IDENTIFIER)
-                .withNamespace(IDENTIFIER)
+                .withNamespace(client.getNamespace())
             .endMetadata()
             .addNewRule()
                 .withApiGroups("", "apps")
@@ -77,12 +79,12 @@ class Initializer {
         final var roleBinding = new RoleBindingBuilder()
             .withNewMetadata()
                 .withName(IDENTIFIER)
-                .withNamespace(IDENTIFIER)
+                .withNamespace(client.getNamespace())
             .endMetadata()
             .withSubjects(new SubjectBuilder()
                 .withKind("ServiceAccount")
                 .withName(IDENTIFIER)
-                .withNamespace(IDENTIFIER)
+                .withNamespace(client.getNamespace())
                 .build())
             .withNewRoleRef()
                 .withApiGroup("rbac.authorization.k8s.io")
