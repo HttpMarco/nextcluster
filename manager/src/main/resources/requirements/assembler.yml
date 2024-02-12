@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: assembler-data
+  namespace: nextcluster
+  labels:
+    app: assembler-data
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 20Gi
+  claimRef:
+    namespace: nextcluster
+    name: assembler-data
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /srv/nextcluster/images
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: assembler-data
+  namespace: nextcluster
+spec:
+  storageClassName: local-storage
+  selector:
+    matchLabels:
+      app: assembler-data
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+  volumeName: assembler-data
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: assembler
+  namespace: nextcluster
+spec:
+  selector:
+    matchLabels:
+      app: assembler
+  template:
+    metadata:
+      labels:
+        app: assembler
+    spec:
+      containers:
+        - name: assembler
+          image: registry.nextcluster.net/assembler:latest
+          volumeMounts:
+            - name: docker-socket
+              mountPath: /var/run/docker.sock
+            - name: assembler-data
+              mountPath: /images
+      volumes:
+        - name: docker-socket
+          hostPath:
+            path: /var/run/docker.sock
+        - name: assembler-data
+          persistentVolumeClaim:
+            claimName: assembler-data

@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: registry-data
+  namespace: nextcluster
+  labels:
+    app: registry-data
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 10Gi
+  claimRef:
+    namespace: nextcluster
+    name: registry-data
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /srv/nextcluster/registry
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: registry-data
+  namespace: nextcluster
+spec:
+  storageClassName: local-storage
+  selector:
+    matchLabels:
+      app: registry-data
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  volumeName: registry-data
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: registry
+  namespace: nextcluster
+spec:
+  selector:
+    matchLabels:
+      app: registry
+  template:
+    metadata:
+      labels:
+        app: registry
+    spec:
+      containers:
+        - name: registry
+          image: registry:2.8.3
+          ports:
+            - containerPort: 5000
+          volumeMounts:
+            - name: registry-data
+              mountPath: /var/lib/registry
+              subPath: registry
+      volumes:
+        - name: registry-data
+          persistentVolumeClaim:
+            claimName: registry-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: registry
+  namespace: nextcluster
+spec:
+  clusterIP: 10.99.214.62
+  selector:
+    app: registry
+  ports:
+    - port: 5000
+      targetPort: 5000
+      protocol: TCP

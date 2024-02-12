@@ -1,0 +1,20 @@
+apiVersion: nextcluster.net/v1
+kind: Group
+metadata: # ATTENTION: This metadata cannot be changed after creation!
+  name: proxy
+  namespace: nextcluster
+spec:
+  base:
+    image: 10.99.214.62:5000/proxy:latest
+    # Expose section is used to make ports visible to the outside world
+    # For example to make it possible to join your velocity, you need to expose the port 25577
+    ports:
+      - port: 25577
+        expose: 32105
+        protocol: TCP
+    environment:
+      - PLATFORM=VELOCITY
+  maintenance: false
+  minOnline: 1
+  maxOnline: 1
+  maxMemory: 1024

@@ -1,0 +1,19 @@
+apiVersion: nextcluster.net/v1
+kind: Group
+metadata: # ATTENTION: This metadata cannot be changed after creation!
+  name: lobby
+  namespace: nextcluster
+spec:
+  base:
+    image: 10.99.214.62:5000/lobby:latest
+    environment:
+      - PLATFORM=PAPER
+#      - VELOCITY_SECRET=2pOyTL6vI025
+    ports:
+      - port: 25565
+        protocol: TCP
+  maintenance: false
+  minOnline: 1
+  maxOnline: 5
+  maxMemory: 128
+  fallback: true

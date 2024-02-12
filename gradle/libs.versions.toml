@@ -1,0 +1,48 @@
+[versions]
+
+kubernetes = "6.10.0"
+guava = "33.0.0-jre"
+gson = "2.10.1"
+
+#utils
+lombok = "1.18.30"
+annotations = "24.1.0"
+osgan = "1.0.13-20240207.162924-1"
+spark = "2.9.4"
+
+# logging
+log4j = "2.22.1"
+slf4j = "2.0.12"
+
+#networking
+netty5 = "5.0.0.Alpha5"
+
+[libraries]
+
+kubernetes = { group = "io.fabric8", name = "kubernetes-client", version.ref = "kubernetes" }
+crd = { group = "io.fabric8", name = "crd-generator-apt", version.ref = "kubernetes" }
+
+guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+spark = { group = "com.sparkjava", name = "spark-core", version.ref = "spark" }
+
+#utils
+lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
+annotations = { group = "org.jetbrains", name = "annotations", version.ref = "annotations" }
+osgan-utils = { group = "dev.httpmarco", name = "osgan-utils", version.ref = "osgan" }
+osgan-reflections = { group = "dev.httpmarco", name = "osgan-reflections", version.ref = "osgan" }
+osgan-configuration = { group = "dev.httpmarco", name = "osgan-configuration", version.ref = "osgan" }
+
+#logging
+slf4j = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
+log4j = { group = "org.apache.logging.log4j", name = "log4j-slf4j2-impl", version.ref = "log4j" }
+
+#networking
+netty5 = { group = "io.netty", name = "netty5-all", version.ref = "netty5" }
+
+[plugins]
+shadow = { id = "com.github.johnrengelman.shadow", version = "8.1.1" }
+
+[bundles]
+osgan = ["osgan-utils", "osgan-reflections", "osgan-configuration"]
+logger = ["slf4j", "log4j"]
