@@ -57,8 +57,7 @@ public class PreVM extends NextCluster {
     private Platform platform;
 
     protected PreVM(String[] args) {
-        //TODO FIX IT null not good
-        super(new NettyClientTransmitter(), null);
+        super(new NettyClientTransmitter());
         this.args = args;
     }
 

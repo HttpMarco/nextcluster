@@ -28,6 +28,7 @@ import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
 import net.nextcluster.driver.NextCluster;
+import net.nextcluster.plugin.resources.player.ClientClusterPlayerProvider;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,6 +38,7 @@ public abstract class NextClusterProxy {
     protected final Map<String, InternalClusterServer> servers = new ConcurrentHashMap<>();
 
     public void watch() {
+        NextCluster.instance().playerProvider(new ClientClusterPlayerProvider());
         NextCluster.instance()
             .kubernetes()
             .pods()
@@ -73,7 +75,6 @@ public abstract class NextClusterProxy {
                         }
                     }
                 }
-
                 @Override
                 public void onClose(WatcherException cause) {
                     cause.printStackTrace(System.err);
@@ -84,7 +85,7 @@ public abstract class NextClusterProxy {
     public abstract void registerServer(InternalClusterServer server);
 
     private void registerServer0(InternalClusterServer server) {
-        NextCluster.LOGGER.info("Registering server: " + server.name());
+        NextCluster.LOGGER.info("Registering server: {}", server.name());
 
         servers.put(server.name(), server);
         registerServer(server);
@@ -93,10 +94,9 @@ public abstract class NextClusterProxy {
     public abstract void unregisterServer(InternalClusterServer server);
 
     private void unregisterServer0(InternalClusterServer server) {
-        NextCluster.LOGGER.info("Unregistering server: " + server.name());
+        NextCluster.LOGGER.info("Unregistering server: {}", server.name());
 
         servers.remove(server.name());
         unregisterServer(server);
     }
-
 }
