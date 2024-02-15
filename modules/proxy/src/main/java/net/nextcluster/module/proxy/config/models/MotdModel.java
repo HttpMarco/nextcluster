@@ -22,20 +22,17 @@
  * SOFTWARE.
  */
 
-pluginManagement {
-    repositories {
-        maven { url = uri("https://repo.spring.io/milestone") }
-        maven { url = uri("https://repo.spring.io/snapshot") }
-        gradlePluginPortal()
-    }
-}
+package net.nextcluster.module.proxy.config.models;
 
-rootProject.name = "nextcluster"
-include("driver")
-include("manager")
-include("plugin")
-include("pre-vm")
-include("assembler")
-include("modules")
-include("modules:proxy")
-findProject(":modules:proxy")?.name = "proxy"
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
+public final class MotdModel {
+
+    private final String firstLine;
+    private final String secondLine;
+    private final long next = 3 * 20L;
+
+}

@@ -85,9 +85,13 @@ public final class NextConfig<T> {
     public T value() {
         T t = this.value;
         if (t == null && defaultValue != null) {
-            t = defaultValue.get();
+            return defaultValue.get();
         }
         return t;
+    }
+
+    public boolean exists() {
+        return NextCluster.instance().kubernetes().configMaps().withName(this.name).get() != null;
     }
 
     @ApiStatus.Internal

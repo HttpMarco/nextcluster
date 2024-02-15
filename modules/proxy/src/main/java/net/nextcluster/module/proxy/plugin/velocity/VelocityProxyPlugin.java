@@ -22,20 +22,7 @@
  * SOFTWARE.
  */
 
-pluginManagement {
-    repositories {
-        maven { url = uri("https://repo.spring.io/milestone") }
-        maven { url = uri("https://repo.spring.io/snapshot") }
-        gradlePluginPortal()
-    }
-}
+package net.nextcluster.module.proxy.plugin.velocity;
 
-rootProject.name = "nextcluster"
-include("driver")
-include("manager")
-include("plugin")
-include("pre-vm")
-include("assembler")
-include("modules")
-include("modules:proxy")
-findProject(":modules:proxy")?.name = "proxy"
+public class VelocityProxyPlugin {
+}

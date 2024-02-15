@@ -26,8 +26,7 @@ package net.nextcluster.driver.resource.group;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import io.fabric8.generator.annotation.Default;
-import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
-import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.model.annotation.Group;
 import io.fabric8.kubernetes.model.annotation.Kind;
 import io.fabric8.kubernetes.model.annotation.Version;
@@ -156,6 +155,24 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
             private String name;
             private String host;
             private String container;
+
+            public Volume toVolume() {
+                // @formatter:off
+                return new VolumeBuilder()
+                    .withName(this.name)
+                        .withNewHostPath()
+                            .withPath(this.host)
+                        .endHostPath()
+                    .build();
+                // @formatter:on
+            }
+
+            public VolumeMount toMount() {
+                return new VolumeMountBuilder()
+                    .withName(this.name)
+                    .withMountPath(this.container)
+                    .build();
+            }
         }
 
     }

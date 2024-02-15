@@ -43,3 +43,5 @@ bin/
 /.idea/*
 
 **/images
+
+gradle.properties

@@ -36,9 +36,6 @@ subprojects {
 
     repositories {
         mavenCentral()
-        maven {
-            url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
-        }
     }
 
     java {
@@ -59,6 +56,30 @@ subprojects {
             testAnnotationProcessor(libs.lombok)
             testImplementation(platform("org.junit:junit-bom:5.10.2"))
             testImplementation("org.junit.jupiter:junit-jupiter")
+        }
+    }
+
+    if (hasProperty("REPOSITORY_USERNAME") && project.name == "driver") {
+        publishing {
+            publications {
+                create<MavenPublication>("mavenJava") {
+                    this.groupId = group.toString()
+                    this.artifactId = artifactId
+                    this.version = version.toString()
+
+                    from(components["java"])
+                }
+            }
+            repositories {
+                maven {
+                    name = "nextCluster"
+                    url = uri("https://nexus.nextcluster.net/repository/maven-snapshots/")
+                    credentials {
+                        username = project.property("REPOSITORY_USERNAME").toString()
+                        password = project.property("REPOSITORY_PASSWORD").toString()
+                    }
+                }
+            }
         }
     }
 

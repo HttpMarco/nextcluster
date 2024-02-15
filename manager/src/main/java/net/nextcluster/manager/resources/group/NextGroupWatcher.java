@@ -24,14 +24,14 @@
 
 package net.nextcluster.manager.resources.group;
 
+import dev.httpmarco.osgan.utils.data.Pair;
 import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.client.informers.ResourceEventHandler;
 import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.resource.group.NextGroup;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class NextGroupWatcher implements ResourceEventHandler<NextGroup> {
@@ -59,6 +59,7 @@ public class NextGroupWatcher implements ResourceEventHandler<NextGroup> {
                 .withProtocol(port.getProtocol())
                 .build())
             .toList();
+        final Collection<NextGroup.Spec.ClusterVolume> volumes = List.of(group.getSpec().getBase().getVolumes());
 
         // @formatter:off
         final var deployment = new DeploymentBuilder()
@@ -95,10 +96,12 @@ public class NextGroupWatcher implements ResourceEventHandler<NextGroup> {
                                     .build())
                                 .toList()
                             )
+                            .addAllToVolumeMounts(volumes.stream().map(NextGroup.Spec.ClusterVolume::toMount).toList())
                             /*.withNewResources()
                                 .addToLimits("memory", new Quantity(group.maxMemory() + "Mi"))
                             .endResources()*/
                         .endContainer()
+                        .addAllToVolumes(volumes.stream().map(NextGroup.Spec.ClusterVolume::toVolume).toList())
                     .endSpec()
                 .endTemplate()
             .endSpec()

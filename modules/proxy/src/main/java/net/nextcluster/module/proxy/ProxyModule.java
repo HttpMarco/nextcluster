@@ -22,20 +22,29 @@
  * SOFTWARE.
  */
 
-pluginManagement {
-    repositories {
-        maven { url = uri("https://repo.spring.io/milestone") }
-        maven { url = uri("https://repo.spring.io/snapshot") }
-        gradlePluginPortal()
-    }
-}
+package net.nextcluster.module.proxy;
 
-rootProject.name = "nextcluster"
-include("driver")
-include("manager")
-include("plugin")
-include("pre-vm")
-include("assembler")
-include("modules")
-include("modules:proxy")
-findProject(":modules:proxy")?.name = "proxy"
+import net.nextcluster.driver.resource.config.NextConfig;
+import net.nextcluster.driver.resource.config.misc.ConfigProperty;
+import net.nextcluster.module.proxy.config.ProxyConfiguration;
+
+import java.util.ArrayList;
+
+public abstract class ProxyModule {
+
+    private final NextConfig<ProxyConfiguration> config = NextConfig.builder(ProxyConfiguration.class)
+        .withProperties(ConfigProperty.OBSERVE, ConfigProperty.UPDATE_ORIGINAL)
+        .register();
+
+    public void initialize() {
+        if (!config.exists()) {
+            final ProxyConfiguration configuration = new ProxyConfiguration(
+                new ArrayList<>(),
+                new ArrayList<>(),
+                new ArrayList<>()
+            );
+            config.value(configuration);
+        }
+    }
+
+}
