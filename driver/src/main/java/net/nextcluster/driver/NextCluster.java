@@ -28,6 +28,7 @@ import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import net.nextcluster.driver.event.EventRegistry;
@@ -41,6 +42,7 @@ import net.nextcluster.driver.resource.service.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.net.http.HttpClient;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -64,9 +66,11 @@ public abstract class NextCluster {
     private final NetworkTransmitter transmitter;
     private final EventRegistry eventRegistry;
     private final MessageService messageService;
-    private final PlayerProvider playerProvider;
 
-    protected NextCluster(NetworkTransmitter transmitter, PlayerProvider playerProvider) {
+    @Setter
+    private @Nullable PlayerProvider playerProvider;
+
+    protected NextCluster(NetworkTransmitter transmitter) {
         instance = this;
 
         if (!System.getProperties().containsKey("disable.banner")) {
@@ -83,7 +87,6 @@ public abstract class NextCluster {
         this.kubernetes = new KubernetesClientBuilder().build();
 
         this.transmitter = transmitter;
-        this.playerProvider = playerProvider;
         this.configProvider = new ConfigProvider();
         this.groupProvider = new GroupProvider();
         this.serviceProvider = new ServiceProvider();
@@ -111,5 +114,4 @@ public abstract class NextCluster {
         }
         throw new NoNamespaceFoundException("Found no namespace to initialize");
     }
-
 }
