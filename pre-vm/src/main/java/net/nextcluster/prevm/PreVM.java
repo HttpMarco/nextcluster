@@ -65,6 +65,7 @@ public class PreVM extends NextCluster {
     public static void premain(String args, Instrumentation instrumentation) {
     }
 
+    @SneakyThrows
     public static void main(String[] args) {
         final PreVM preVM = new PreVM(args);
 
@@ -84,6 +85,15 @@ public class PreVM extends NextCluster {
         if (Files.notExists(platform)) {
             LOGGER.warn("No platform.jar found, downloading platform...");
             preVM.downloadPlatform(platform);
+        }
+
+        if (System.getenv().containsKey("STATIC") && Boolean.parseBoolean(System.getenv("STATIC"))) {
+            final Path staticFolder = Path.of("./static");
+            if (Files.notExists(staticFolder)) {
+                Files.copy(Path.of("/data"), staticFolder);
+            }
+            preVM.startPlatform(new File("./static/platform.jar"));
+            return;
         }
         preVM.startPlatform(platform.toFile());
     }

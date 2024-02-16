@@ -27,11 +27,17 @@ package net.nextcluster.manager.resources.group;
 import dev.httpmarco.osgan.utils.data.Pair;
 import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
+import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.informers.ResourceEventHandler;
 import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.resource.group.NextGroup;
+import net.nextcluster.manager.resources.group.processor.DynamicGroupProcessor;
+import net.nextcluster.manager.resources.group.processor.GroupProcessor;
+import net.nextcluster.manager.resources.group.processor.StaticGroupProcessor;
 
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public class NextGroupWatcher implements ResourceEventHandler<NextGroup> {
@@ -52,62 +58,11 @@ public class NextGroupWatcher implements ResourceEventHandler<NextGroup> {
     }
 
     private void deploy(NextGroup group) {
-        final var client = NextCluster.instance().kubernetes();
-        final Collection<ContainerPort> ports = Stream.of(group.getSpec().getBase().getPorts())
-            .map(port -> new ContainerPortBuilder()
-                .withContainerPort(port.getPort())
-                .withProtocol(port.getProtocol())
-                .build())
-            .toList();
-        final Collection<NextGroup.Spec.ClusterVolume> volumes = List.of(group.getSpec().getBase().getVolumes());
+        final KubernetesClient client = NextCluster.instance().kubernetes();
+        final GroupProcessor processor = group.getSpec().isStatic() ?
+            new StaticGroupProcessor() : new DynamicGroupProcessor();
 
-        // @formatter:off
-        final var deployment = new DeploymentBuilder()
-            .withNewMetadata()
-                .withName(group.getMetadata().getName())
-                .withNamespace(group.getMetadata().getNamespace())
-                .addToLabels("nextcluster", "true")
-            .endMetadata()
-            .withNewSpec()
-                .withReplicas(group.minOnline())
-                .withSelector(
-                    new LabelSelectorBuilder()
-                        .addToMatchLabels("nextcluster/group", group.name())
-                        .build()
-                )
-                .withNewTemplate()
-                    .withNewMetadata()
-                        .addToLabels("nextcluster", "true")
-                        .addToLabels("nextcluster/group", group.name())
-                        .addToLabels("nextcluster/fallback", String.valueOf(group.isFallback()))
-                        .addToLabels("nextcluster/type", group.platform().type())
-                    .endMetadata()
-                    .withNewSpec()
-                        .withServiceAccountName("nextcluster")
-                        .addNewContainer()
-                            .withName(group.name())
-                            .withImage(group.image())
-                            .withImagePullPolicy("Always")
-                            .addAllToPorts(ports)
-                            .addAllToEnv(
-                                group.environment().entrySet().stream().map(env -> new EnvVarBuilder()
-                                    .withName(env.getKey())
-                                    .withValue(env.getValue())
-                                    .build())
-                                .toList()
-                            )
-                            .addAllToVolumeMounts(volumes.stream().map(NextGroup.Spec.ClusterVolume::toMount).toList())
-                            /*.withNewResources()
-                                .addToLimits("memory", new Quantity(group.maxMemory() + "Mi"))
-                            .endResources()*/
-                        .endContainer()
-                        .addAllToVolumes(volumes.stream().map(NextGroup.Spec.ClusterVolume::toVolume).toList())
-                    .endSpec()
-                .endTemplate()
-            .endSpec()
-            .build();
-        // @formatter:on
-        client.apps().deployments().resource(deployment).serverSideApply();
+        processor.deploy(group);
 
         Arrays.stream(group.getSpec().getBase().getPorts())
             .filter(port -> port.getExpose() != null)
