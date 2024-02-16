@@ -27,9 +27,9 @@ package net.nextcluster.plugin.proxy.velocity;
 import com.google.inject.Inject;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
-import com.velocitypowered.api.event.connection.PostLoginEvent;
 import com.velocitypowered.api.event.player.KickedFromServerEvent;
 import com.velocitypowered.api.event.player.PlayerChooseInitialServerEvent;
+import com.velocitypowered.api.event.player.ServerConnectedEvent;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.proxy.ProxyServer;
@@ -85,8 +85,12 @@ public class NextClusterVelocity extends NextClusterProxy {
     }
 
     @Subscribe
-    public void onPlayerConnect(PostLoginEvent event) {
-        NextCluster.instance().transmitter().send(new ClusterPlayerConnectPacket(new VelocityClusterPlayer(event.getPlayer())));
+    public void onPlayerConnect(ServerConnectedEvent event) {
+        if(event.getPreviousServer().isPresent()) {
+
+        } else {
+            NextCluster.instance().transmitter().send(new ClusterPlayerConnectPacket(new VelocityClusterPlayer(event.getPlayer())));
+        }
     }
 
     @Subscribe

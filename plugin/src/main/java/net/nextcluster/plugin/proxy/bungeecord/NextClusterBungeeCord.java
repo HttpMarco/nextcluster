@@ -24,34 +24,35 @@
 
 package net.nextcluster.plugin.proxy.bungeecord;
 
+import net.md_5.bungee.api.event.ServerConnectEvent;
+import net.md_5.bungee.api.event.ServerKickEvent;
 import net.md_5.bungee.api.plugin.Plugin;
-import net.nextcluster.plugin.proxy.NextClusterProxy;
-import net.nextcluster.plugin.proxy.InternalClusterServer;
-
-import java.net.InetSocketAddress;
+import net.md_5.bungee.event.EventHandler;
 
 
 @SuppressWarnings("unused")
 public class NextClusterBungeeCord extends Plugin {
 
+    private final BungeeCordProxy proxy = new BungeeCordProxy();
+
     @Override
     public void onEnable() {
-        new NextClusterProxy() {
-            @Override
-            public void registerServer(InternalClusterServer server) {
-                final var info = getProxy().constructServerInfo(
-                    server.name(),
-                    new InetSocketAddress(server.ip(), 25565),
-                    "NextCluster Service",
-                    false
-                );
-                getProxy().getServers().put(server.name(), info);
-            }
+        proxy.watch();
+    }
 
-            @Override
-            public void unregisterServer(InternalClusterServer server) {
-                getProxy().getServers().remove(server.name());
-            }
-        }.watch();
+    @EventHandler
+    public void handle(ServerConnectEvent event) {
+        proxy.findFallback().ifPresentOrElse(event::setTarget, () -> {
+            event.getPlayer().disconnect("No fallback server available");
+            event.setCancelled(true);
+        });
+    }
+
+    @EventHandler
+    public void handle(ServerKickEvent event) {
+        proxy.findFallback().ifPresentOrElse(event::setCancelServer, () -> {
+            event.getPlayer().sendMessage(event.getReason());
+            event.setCancelled(true);
+        });
     }
 }

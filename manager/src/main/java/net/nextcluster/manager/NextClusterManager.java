@@ -39,26 +39,28 @@ public class NextClusterManager extends NextCluster {
 
     protected NextClusterManager() {
         // register communication transmitter (priority)
-        super(new NettyServerTransmitter(), new ManagerCloudPlayerProvider());
+        super(new NettyServerTransmitter());
+
+        // wait for the transmitter to be ready
+        playerProvider(new ManagerCloudPlayerProvider(this.transmitter()));
     }
 
     public static void main(String[] args) {
         long startup = System.currentTimeMillis();
         new SpringApplicationBuilder(NextClusterManager.class)
-            .bannerMode(Banner.Mode.OFF)
-            .run(args);
+                .bannerMode(Banner.Mode.OFF)
+                .run(args);
 
         var client = NextCluster.instance().kubernetes();
         LOGGER.info("Applying custom resources...");
         Initializer.initialize(client);
         client.apiextensions()
-            .v1()
-            .customResourceDefinitions()
-            .load(ClassLoader.getSystemClassLoader().getResourceAsStream("models/nextgroup.yml"))
-            .serverSideApply();
+                .v1()
+                .customResourceDefinitions()
+                .load(ClassLoader.getSystemClassLoader().getResourceAsStream("models/nextgroup.yml"))
+                .serverSideApply();
         LOGGER.info("Custom resources successfully applied!");
         client.resources(NextGroup.class).inform(new NextGroupWatcher());
-        LOGGER.info("NextClusterManager started in " + (System.currentTimeMillis() - startup) + "ms!");
+        LOGGER.info("NextClusterManager started in {}ms!", System.currentTimeMillis() - startup);
     }
-
 }

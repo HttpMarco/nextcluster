@@ -1,6 +1,6 @@
 package net.nextcluster.manager.resources.player;
 
-import net.nextcluster.driver.NextCluster;
+import net.nextcluster.driver.networking.transmitter.NetworkTransmitter;
 import net.nextcluster.driver.resource.player.ClusterPlayer;
 import net.nextcluster.driver.resource.player.PlayerProvider;
 import net.nextcluster.driver.resource.player.packets.ClusterPlayerConnectPacket;
@@ -15,14 +15,9 @@ public final class ManagerCloudPlayerProvider implements PlayerProvider {
 
     private final Map<UUID, ClusterPlayer> players = new HashMap<>();
 
-    public ManagerCloudPlayerProvider() {
-        // TODO: Fix @Mirco
-        /*NextCluster.instance().transmitter().registerListener(ClusterPlayerConnectPacket.class, (channel, it) -> {
-            this.players.put(it.clusterPlayer().uniqueId(), it.clusterPlayer());
-        });
-        NextCluster.instance().transmitter().registerListener(ClusterPlayerDisconnectPacket.class, (channel, it) -> {
-            this.players.remove(it.uniqueId());
-        });*/
+    public ManagerCloudPlayerProvider(NetworkTransmitter transmitter) {
+        transmitter.registerListener(ClusterPlayerConnectPacket.class, (channel, it) -> this.players.put(it.clusterPlayer().uniqueId(), it.clusterPlayer()));
+        transmitter.registerListener(ClusterPlayerDisconnectPacket.class, (channel, it) -> this.players.remove(it.uniqueId()));
     }
 
     @Override

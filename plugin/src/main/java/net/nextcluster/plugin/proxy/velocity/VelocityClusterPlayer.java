@@ -7,8 +7,6 @@ import net.kyori.adventure.title.Title;
 import net.nextcluster.driver.resource.player.AbstractClusterPlayer;
 
 import java.time.Duration;
-import java.util.UUID;
-
 
 public class VelocityClusterPlayer extends AbstractClusterPlayer {
 
@@ -16,8 +14,7 @@ public class VelocityClusterPlayer extends AbstractClusterPlayer {
     private final Player player;
 
     public VelocityClusterPlayer(Player player) {
-        // TODO: Fix @Mirco -> player.getCurrentServer() could be null
-        super(player.getUsername(), player.getUniqueId(), System.getenv("HOSTNAME"), player.getCurrentServer().orElse(null).getServerInfo().getName());
+        super(player.getUsername(), player.getUniqueId(), System.getenv("HOSTNAME"), null);
         this.player = player;
     }
 
