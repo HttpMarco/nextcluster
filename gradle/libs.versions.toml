@@ -7,7 +7,7 @@ gson = "2.10.1"
 #utils
 lombok = "1.18.30"
 annotations = "24.1.0"
-osgan = "1.0.13-20240207.162924-1"
+osgan = "1.0.14-20240218.215141-1"
 spark = "2.9.4"
 
 # logging
