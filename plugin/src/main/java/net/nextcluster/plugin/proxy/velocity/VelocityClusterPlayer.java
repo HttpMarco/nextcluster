@@ -1,6 +1,7 @@
 package net.nextcluster.plugin.proxy.velocity;
 
 import com.velocitypowered.api.proxy.Player;
+import com.velocitypowered.api.proxy.ProxyServer;
 import dev.httpmarco.osgon.configuration.ConfigExclude;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
@@ -12,10 +13,13 @@ public class VelocityClusterPlayer extends AbstractClusterPlayer {
 
     @ConfigExclude
     private final Player player;
+    @ConfigExclude
+    private final ProxyServer proxyServer;
 
-    public VelocityClusterPlayer(Player player) {
+    public VelocityClusterPlayer(ProxyServer server, Player player) {
         super(player.getUsername(), player.getUniqueId(), System.getenv("HOSTNAME"), null);
         this.player = player;
+        this.proxyServer = server;
     }
 
     @Override
@@ -43,7 +47,6 @@ public class VelocityClusterPlayer extends AbstractClusterPlayer {
 
     @Override
     public void connectToServer(String serverName) {
-        // TODO FIND A WAY TO DO THIS
-       // this.player.createConnectionRequest(Prox).fireAndForget();
+        proxyServer.getServer(serverName).ifPresent(registeredServer -> this.player.createConnectionRequest(registeredServer).connect());
     }
 }

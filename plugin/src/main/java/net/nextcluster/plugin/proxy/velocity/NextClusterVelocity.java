@@ -89,7 +89,7 @@ public class NextClusterVelocity extends NextClusterProxy {
         if(event.getPreviousServer().isPresent()) {
 
         } else {
-            NextCluster.instance().transmitter().send(new ClusterPlayerConnectPacket(new VelocityClusterPlayer(event.getPlayer())));
+            NextCluster.instance().transmitter().send(new ClusterPlayerConnectPacket(new VelocityClusterPlayer(this.server, event.getPlayer())));
         }
     }
 

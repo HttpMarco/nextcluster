@@ -32,5 +32,4 @@ public abstract class NextClusterPlugin {
         Spark.port(8080);
         Spark.get("/information", (request, response) -> "Hello World");
     }
-
 }
