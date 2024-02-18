@@ -24,6 +24,7 @@
 
 package net.nextcluster.driver.resource.group;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import io.fabric8.generator.annotation.Default;
 import io.fabric8.kubernetes.api.model.*;
@@ -102,6 +103,7 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
     }
 
     @Getter
+    @Setter(AccessLevel.PACKAGE)
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Spec {
@@ -128,7 +130,12 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
         @JsonPropertyDescription("Status if the group is a fallback group (unnecessary for proxies)")
         private boolean fallback;
 
+        @Default("false")
+        @JsonProperty(value = "static")
+        private boolean isStatic;
+
         @Getter
+        @Setter(AccessLevel.PACKAGE)
         @NoArgsConstructor
         @AllArgsConstructor
         public static class Base {
@@ -190,10 +197,20 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
     public static class Builder {
 
         private final String name;
+        private String image;
+
+        public Builder withImage(String image) {
+            this.image = image;
+            return this;
+        }
 
         public void publish() {
             final var group = new NextGroup();
-            group.setMetadata(new ObjectMetaBuilder().withName(this.name).build());
+            group.setMetadata(new ObjectMetaBuilder().withName(this.name)
+                .withNamespace(NextCluster.instance().kubernetes().getNamespace())
+                .build()
+            );
+            group.spec.base.setImage(this.image);
             NextCluster.instance().kubernetes().resources(NextGroup.class).resource(group).serverSideApply();
         }
 

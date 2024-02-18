@@ -68,10 +68,15 @@ spec:
                   default: false
                 minOnline:
                   type: integer
+                  default: 1
                 maxOnline:
-                  type: integer
+                  type: number
+                  default: 1000
                 maxMemory:
                   type: number
+                static:
+                  type: boolean
+                  default: false
             status:
               type: object
               properties:
