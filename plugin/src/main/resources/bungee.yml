@@ -1,4 +1,4 @@
 name: NextCluster
 version: 1.0.0
-author: HabsGleich
+author: nextCluster
 main: net.nextcluster.plugin.proxy.bungeecord.NextClusterBungeeCord
