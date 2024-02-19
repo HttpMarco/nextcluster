@@ -24,18 +24,36 @@
 
 package net.nextcluster.driver.resource.player;
 
+import dev.httpmarco.osgan.utils.executers.ThreadAsyncExecutor;
+
 import java.util.Optional;
 import java.util.UUID;
 
 public interface PlayerProvider {
 
-    Optional<ClusterPlayer> getPlayer(UUID uniqueId);
+    default Optional<ClusterPlayer> getPlayer(UUID uniqueId) {
+        return this.getPlayerAsync(uniqueId).sync(Optional.empty());
+    }
 
-    Optional<ClusterPlayer> getPlayer(String name);
+    ThreadAsyncExecutor<Optional<ClusterPlayer>> getPlayerAsync(UUID uniqueId);
 
-    boolean isOnline(String username);
+    default Optional<ClusterPlayer> getPlayer(String name) {
+        return this.getPlayerAsync(name).sync(Optional.empty());
+    }
 
-    boolean isOnline(UUID uniqueId);
+    ThreadAsyncExecutor<Optional<ClusterPlayer>> getPlayerAsync(String name);
+
+    default boolean isOnline(String username) {
+        return this.isOnlineAsync(username).sync(false);
+    }
+
+    ThreadAsyncExecutor<Boolean> isOnlineAsync(String username);
+
+    default boolean isOnline(UUID uniqueId) {
+        return this.isOnlineAsync(uniqueId).sync(false);
+    }
+
+    ThreadAsyncExecutor<Boolean> isOnlineAsync(UUID uniqueId);
 
     ClusterPlayer createPlayer(String name, UUID uniqueId, String currentProxyName, String currentServerName);
 

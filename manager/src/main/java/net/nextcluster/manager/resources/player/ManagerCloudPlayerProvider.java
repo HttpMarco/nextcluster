@@ -1,5 +1,6 @@
 package net.nextcluster.manager.resources.player;
 
+import dev.httpmarco.osgan.utils.executers.ThreadAsyncExecutor;
 import net.nextcluster.driver.networking.transmitter.NetworkTransmitter;
 import net.nextcluster.driver.resource.player.ClusterPlayer;
 import net.nextcluster.driver.resource.player.PlayerProvider;
@@ -21,23 +22,31 @@ public final class ManagerCloudPlayerProvider implements PlayerProvider {
     }
 
     @Override
-    public Optional<ClusterPlayer> getPlayer(UUID uniqueId) {
-        return Optional.ofNullable(players.get(uniqueId));
+    public ThreadAsyncExecutor<Optional<ClusterPlayer>> getPlayerAsync(UUID uniqueId) {
+        var executor = new ThreadAsyncExecutor<Optional<ClusterPlayer>>();
+        executor.complete(Optional.ofNullable(players.get(uniqueId)));
+        return executor;
     }
 
     @Override
-    public Optional<ClusterPlayer> getPlayer(String name) {
-        return players.values().stream().filter(player -> player.name().equals(name)).findFirst();
+    public ThreadAsyncExecutor<Optional<ClusterPlayer>> getPlayerAsync(String name) {
+        var executor = new ThreadAsyncExecutor<Optional<ClusterPlayer>>();
+        executor.complete(players.values().stream().filter(player -> player.name().equals(name)).findFirst());
+        return executor;
     }
 
     @Override
-    public boolean isOnline(String username) {
-        return players.values().stream().anyMatch(player -> player.name().equals(username));
+    public ThreadAsyncExecutor<Boolean> isOnlineAsync(String username) {
+        var executor = new ThreadAsyncExecutor<Boolean>();
+        executor.complete(players.values().stream().anyMatch(player -> player.name().equals(username)));
+        return executor;
     }
 
     @Override
-    public boolean isOnline(UUID uniqueId) {
-        return players.containsKey(uniqueId);
+    public ThreadAsyncExecutor<Boolean> isOnlineAsync(UUID uniqueId) {
+        var executor = new ThreadAsyncExecutor<Boolean>();
+        executor.complete(players.containsKey(uniqueId));
+        return executor;
     }
 
     @Override
