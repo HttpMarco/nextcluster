@@ -50,4 +50,6 @@ public interface ClusterGroup {
 
     void shutdown();
 
+    NextGroup.Builder asBuilder();
+
 }

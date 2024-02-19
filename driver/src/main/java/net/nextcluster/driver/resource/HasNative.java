@@ -21,27 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-plugins {
-    id("com.github.johnrengelman.shadow") version "8.1.1"
-}
 
-repositories {
-    // Velocity
-    maven {
-        url = uri("https://repo.papermc.io/repository/maven-public/")
+package net.nextcluster.driver.resource;
+
+import io.fabric8.kubernetes.client.dsl.Resource;
+
+public interface HasNative<T, S extends Resource<T>> {
+
+    S asResource();
+
+    default T asNative() {
+        return asResource().get();
     }
-}
 
-dependencies {
-    compileOnly(project(":pre-vm"))
-
-    compileOnly("com.velocitypowered:velocity-api:3.3.0-SNAPSHOT")
-    annotationProcessor("com.velocitypowered:velocity-api:3.3.0-SNAPSHOT")
-    compileOnly("net.md-5:bungeecord-api:1.20-R0.2")
-    compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
-    implementation(libs.spark)
-}
-
-tasks.shadowJar {
-    archiveFileName.set("nextcluster-plugin.jar")
 }

@@ -86,6 +86,14 @@ public enum Platform {
     private boolean eula;
     private Supplier<String[]> args;
 
+    public static Platform detect() {
+        try {
+            return valueOf(System.getenv("PLATFORM").toUpperCase());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public String[] args() {
         return this.args == null ? new String[0] : this.args.get();
     }

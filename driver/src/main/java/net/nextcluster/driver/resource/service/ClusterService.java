@@ -24,12 +24,18 @@
 
 package net.nextcluster.driver.resource.service;
 
-public interface ClusterService {
+import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.client.dsl.PodResource;
+import net.nextcluster.driver.resource.HasNative;
+
+public interface ClusterService extends HasNative<Pod, PodResource> {
 
     ServiceInformation information();
 
     String name();
 
     void shutdown();
+
+    void execute(String command);
 
 }

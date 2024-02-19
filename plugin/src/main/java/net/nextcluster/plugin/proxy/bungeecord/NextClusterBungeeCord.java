@@ -24,6 +24,7 @@
 
 package net.nextcluster.plugin.proxy.bungeecord;
 
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.event.ServerConnectEvent;
 import net.md_5.bungee.api.event.ServerKickEvent;
 import net.md_5.bungee.api.plugin.Plugin;
@@ -43,7 +44,7 @@ public class NextClusterBungeeCord extends Plugin {
     @EventHandler
     public void handle(ServerConnectEvent event) {
         proxy.findFallback().ifPresentOrElse(event::setTarget, () -> {
-            event.getPlayer().disconnect("No fallback server available");
+            event.getPlayer().disconnect(TextComponent.fromLegacy("No fallback server available"));
             event.setCancelled(true);
         });
     }

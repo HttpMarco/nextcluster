@@ -70,8 +70,10 @@ public final class DynamicGroupProcessor implements GroupProcessor {
                     .withNewSpec()
                         .withServiceAccountName("nextcluster")
                         .addNewContainer()
-                            .withName(group.name())
+                            .withName("server")
                             .withImage(group.image())
+                            .withTty()
+                            .withStdin()
                             .withImagePullPolicy("Always")
                             .addAllToPorts(ports)
                             .addAllToEnv(

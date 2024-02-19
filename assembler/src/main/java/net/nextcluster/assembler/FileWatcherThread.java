@@ -30,24 +30,17 @@ import net.nextcluster.assembler.image.ImageMeta;
 import net.nextcluster.assembler.tasks.CommandLineTask;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardWatchEventKinds;
-import java.nio.file.WatchEvent;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 
 import static net.nextcluster.driver.NextCluster.LOGGER;
 
 public class FileWatcherThread extends Thread {
 
     private static final String DOCKER_IMAGE_FORMAT = "%s/%s:%s";
-    @SuppressWarnings("unchecked")
-    private static final WatchEvent.Kind<Path>[] EVENTS = new WatchEvent.Kind[]{
-        StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY
-    };
-
     private final Map<String, Long> lastChanged = new ConcurrentHashMap<>();
 
     public FileWatcherThread() {
@@ -58,32 +51,30 @@ public class FileWatcherThread extends Thread {
     @SneakyThrows
     @Override
     public void run() {
-        Path images = Path.of("/images");
+        final Path images = Path.of("/images");
 
-        LOGGER.info(images.toAbsolutePath().toString());
+        LOGGER.info("Watching: {}", images.toAbsolutePath());
 
         while (true) {
-            Files.list(images).forEach(new Consumer<Path>() {
-                @SneakyThrows
-                @Override
-                public void accept(Path path) {
-                    long lastChange = lastChanged.computeIfAbsent(
-                        path.toAbsolutePath().toString(),
-                        s -> System.currentTimeMillis()
-                    );
-                    if (isChanged(path, lastChange)) {
-                        LOGGER.info("File {} changed", path.toAbsolutePath());
-                        lastChanged.put(path.toAbsolutePath().toString(), System.currentTimeMillis());
+            Files.list(images).forEach(path -> {
+                long lastChange = lastChanged.computeIfAbsent(
+                    path.toAbsolutePath().toString(),
+                    s -> System.currentTimeMillis()
+                );
+                if (isChanged(path, lastChange)) {
+                    LOGGER.info("File {} changed", path.toAbsolutePath());
+                    lastChanged.put(path.toAbsolutePath().toString(), System.currentTimeMillis());
 
-                        var meta = path.resolve("meta.json");
-                        var dockerfile = path.resolve("Dockerfile");
-                        if (Files.notExists(dockerfile)) {
-                            LOGGER.error("No Dockerfile found ({})", dockerfile.toAbsolutePath());
-                            return;
-                        }
+                    var meta = path.resolve("meta.json");
+                    var dockerfile = path.resolve("Dockerfile");
+                    if (Files.notExists(dockerfile)) {
+                        LOGGER.error("No Dockerfile found ({})", dockerfile.toAbsolutePath());
+                        return;
+                    }
 
-                        var metadata = JsonUtils.fromJson(Files.readString(meta), ImageMeta.class);
-                        var image = DOCKER_IMAGE_FORMAT.formatted(metadata.getUrl(), metadata.getName(), metadata.getTag());
+                    try {
+                        final var metadata = JsonUtils.fromJson(Files.readString(meta), ImageMeta.class);
+                        final var image = DOCKER_IMAGE_FORMAT.formatted(metadata.getUrl(), metadata.getName(), metadata.getTag());
 
                         CommandLineTask.run("docker build -t " + image + " " + path.toAbsolutePath());
 
@@ -97,6 +88,8 @@ public class FileWatcherThread extends Thread {
 
                         CommandLineTask.run("docker push " + image);
                         LOGGER.info("Image {} built and pushed successfully", image);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
                     }
                 }
             });
@@ -124,7 +117,7 @@ public class FileWatcherThread extends Thread {
         for (File child : children) {
             if (child.isDirectory() && isChanged(child.toPath(), lastChange)) {
                 return true;
-            } else if(!child.isDirectory()) {
+            } else if (!child.isDirectory()) {
                 if (child.lastModified() > lastChange) {
                     return true;
                 }

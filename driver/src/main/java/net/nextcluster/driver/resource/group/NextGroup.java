@@ -24,8 +24,10 @@
 
 package net.nextcluster.driver.resource.group;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.base.Preconditions;
 import io.fabric8.generator.annotation.Default;
 import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.model.annotation.Group;
@@ -57,11 +59,13 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
     }
 
     @Override
+    @JsonIgnore
     public boolean isMaintenance() {
         return this.getSpec().isMaintenance();
     }
 
     @Override
+    @JsonIgnore
     public boolean isFallback() {
         return this.getSpec().isFallback();
     }
@@ -102,6 +106,11 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
         }
     }
 
+    @Override
+    public Builder asBuilder() {
+        return new Builder(this);
+    }
+
     @Getter
     @Setter(AccessLevel.PACKAGE)
     @NoArgsConstructor
@@ -118,7 +127,7 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
         @JsonPropertyDescription("The minimum amount of online servers for the group")
         private int minOnline;
 
-        @Default("100")
+        @Default("-1")
         @JsonPropertyDescription("The maximum amount of online servers for the group")
         private int maxOnline;
 
@@ -192,26 +201,74 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
         private int players;
     }
 
-    // TODO: Improve
-    @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
     public static class Builder {
 
-        private final String name;
-        private String image;
+        private final NextGroup group;
+        private final Spec spec;
 
-        public Builder withImage(String image) {
-            this.image = image;
+        private Builder(NextGroup group) {
+            this.group = group;
+            this.spec = group.getSpec();
+        }
+
+        Builder(String name) {
+            this.group = new NextGroup();
+            this.spec = new Spec();
+
+            this.group.setMetadata(new ObjectMetaBuilder()
+                .withName(name)
+                .withNamespace(NextCluster.instance().kubernetes().getNamespace())
+                .build()
+            );
+            this.spec.setBase(new Spec.Base());
+            this.group.setStatus(new Status());
+        }
+
+        public Builder withImage(String value) {
+            this.spec.getBase().setImage(value);
+            return this;
+        }
+
+        public Builder withMinOnline(int value) {
+            this.spec.setMinOnline(value);
+            return this;
+        }
+
+        public Builder withMaxOnline(int value) {
+            this.spec.setMaxOnline(value);
+            return this;
+        }
+
+        public Builder withFallback(boolean value) {
+            this.spec.setFallback(value);
+            return this;
+        }
+
+        public Builder withMaintenance(boolean value) {
+            this.spec.setMaintenance(value);
+            return this;
+        }
+
+        public Builder withStatic(boolean value) {
+            this.spec.setStatic(value);
+            return this;
+        }
+
+        public Builder withMaxMemory(long value) {
+            this.spec.setMaxMemory(value);
             return this;
         }
 
         public void publish() {
-            final var group = new NextGroup();
-            group.setMetadata(new ObjectMetaBuilder().withName(this.name)
-                .withNamespace(NextCluster.instance().kubernetes().getNamespace())
-                .build()
-            );
-            group.spec.base.setImage(this.image);
-            NextCluster.instance().kubernetes().resources(NextGroup.class).resource(group).serverSideApply();
+            Preconditions.checkNotNull(this.spec.base.image, "Image is required");
+
+            group.setSpec(spec);
+
+            NextCluster.instance()
+                .kubernetes()
+                .resources(NextGroup.class)
+                .resource(group)
+                .serverSideApply();
         }
 
     }

@@ -35,10 +35,14 @@ import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.proxy.server.ServerInfo;
+import dev.httpmarco.osgan.utils.data.Pair;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.nextcluster.driver.NextCluster;
+import net.nextcluster.driver.resource.Platform;
 import net.nextcluster.driver.resource.player.packets.ClusterPlayerConnectPacket;
 import net.nextcluster.driver.resource.player.packets.ClusterPlayerDisconnectPacket;
+import net.nextcluster.driver.resource.service.ServiceInformation;
 import net.nextcluster.plugin.proxy.InternalClusterServer;
 import net.nextcluster.plugin.proxy.NextClusterProxy;
 
@@ -86,7 +90,7 @@ public class NextClusterVelocity extends NextClusterProxy {
 
     @Subscribe
     public void onPlayerConnect(ServerConnectedEvent event) {
-        if(event.getPreviousServer().isPresent()) {
+        if (event.getPreviousServer().isPresent()) {
 
         } else {
             NextCluster.instance().transmitter().send(new ClusterPlayerConnectPacket(new VelocityClusterPlayer(this.server, event.getPlayer())));
@@ -122,5 +126,19 @@ public class NextClusterVelocity extends NextClusterProxy {
             return Optional.empty();
         }
         return this.server.getServer(server.get().name());
+    }
+
+    @Override
+    public ServiceInformation currentInformation() {
+        return new ServiceInformation(
+            this.server.getPlayerCount(),
+            this.server.getConfiguration().getShowMaxPlayers(),
+            ((TextComponent) this.server.getConfiguration().getMotd()).content(),
+            Platform.valueOf(System.getenv("PLATFORM")),
+            this.server.getAllPlayers()
+                .stream()
+                .map(player -> new Pair<>(player.getUniqueId(), player.getUsername()))
+                .toList()
+        );
     }
 }

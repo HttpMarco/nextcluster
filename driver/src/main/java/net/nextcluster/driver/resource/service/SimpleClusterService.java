@@ -26,12 +26,14 @@ package net.nextcluster.driver.resource.service;
 
 import dev.httpmarco.osgon.configuration.gson.JsonUtils;
 import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.client.dsl.PodResource;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.exceptions.ServiceNotRespondException;
 
+import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
@@ -49,11 +51,15 @@ public class SimpleClusterService implements ClusterService {
     @SneakyThrows
     @Override
     public ServiceInformation information() {
-        final var request = HttpRequest.newBuilder()
+        final var ip = asNative().getStatus().getPodIP();
+        if (ip == null) {
+            return null;
+        }
+        final var request = HttpRequest.newBuilder(URI.create("http://%s:8080/information".formatted(ip)))
+            .GET()
             .build();
         final var response = NextCluster.HTTP_CLIENT.send(
-            request,
-            HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)
+            request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)
         );
         if (response.statusCode() != 200) {
             throw new ServiceNotRespondException("Failed to retrieve service information from " + this.name);
@@ -63,6 +69,16 @@ public class SimpleClusterService implements ClusterService {
 
     @Override
     public void shutdown() {
-        NextCluster.instance().kubernetes().pods().withName(this.name).delete();
+        asResource().delete();
+    }
+
+    @Override
+    public void execute(String command) {
+        asResource().inContainer("server").exec(command);
+    }
+
+    @Override
+    public PodResource asResource() {
+        return NextCluster.instance().kubernetes().pods().withName(this.name);
     }
 }

@@ -26,6 +26,7 @@ package net.nextcluster.manager;
 
 import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.resource.group.NextGroup;
+import net.nextcluster.driver.resource.service.ClusterService;
 import net.nextcluster.manager.networking.NettyServerTransmitter;
 import net.nextcluster.manager.resources.group.NextGroupWatcher;
 import net.nextcluster.manager.resources.player.ManagerCloudPlayerProvider;
@@ -48,19 +49,25 @@ public class NextClusterManager extends NextCluster {
     public static void main(String[] args) {
         long startup = System.currentTimeMillis();
         new SpringApplicationBuilder(NextClusterManager.class)
-                .bannerMode(Banner.Mode.OFF)
-                .run(args);
+            .bannerMode(Banner.Mode.OFF)
+            .run(args);
 
         var client = NextCluster.instance().kubernetes();
+
         LOGGER.info("Applying custom resources...");
         Initializer.initialize(client);
         client.apiextensions()
-                .v1()
-                .customResourceDefinitions()
-                .load(ClassLoader.getSystemClassLoader().getResourceAsStream("models/nextgroup.yml"))
-                .serverSideApply();
+            .v1()
+            .customResourceDefinitions()
+            .load(ClassLoader.getSystemClassLoader().getResourceAsStream("models/nextgroup.yml"))
+            .forceConflicts()
+            .serverSideApply();
         LOGGER.info("Custom resources successfully applied!");
         client.resources(NextGroup.class).inform(new NextGroupWatcher());
         LOGGER.info("NextClusterManager started in {}ms!", System.currentTimeMillis() - startup);
+
+        for (ClusterService service : NextCluster.instance().serviceProvider().getServices()) {
+            LOGGER.info("Service: {}", service.name());
+        }
     }
 }

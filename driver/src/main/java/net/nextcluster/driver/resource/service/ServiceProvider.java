@@ -31,7 +31,6 @@ import org.jetbrains.annotations.UnmodifiableView;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Supplier;
 
 public class ServiceProvider {
 
@@ -41,6 +40,7 @@ public class ServiceProvider {
             NextCluster.instance()
                 .kubernetes()
                 .pods()
+                .withLabel("nextcluster", "true")
                 .list()
                 .getItems()
                 .stream()

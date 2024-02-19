@@ -24,12 +24,28 @@
 
 package net.nextcluster.plugin;
 
-import spark.Spark;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
+import net.nextcluster.driver.resource.service.ServiceInformation;
+import net.nextcluster.plugin.rest.RestServer;
 
+@Setter
+@Accessors(fluent = true)
 public abstract class NextClusterPlugin {
 
-    protected void initRest() {
-        Spark.port(8080);
-        Spark.get("/information", (request, response) -> "Hello World");
+    @Getter
+    private static NextClusterPlugin instance;
+
+    private String motd;
+    private int maxPlayers;
+
+    protected void init() {
+        instance = this;
+
+        RestServer.init();
     }
+
+    public abstract ServiceInformation currentInformation();
+
 }

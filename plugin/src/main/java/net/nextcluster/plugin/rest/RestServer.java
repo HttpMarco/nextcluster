@@ -21,27 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-plugins {
-    id("com.github.johnrengelman.shadow") version "8.1.1"
-}
 
-repositories {
-    // Velocity
-    maven {
-        url = uri("https://repo.papermc.io/repository/maven-public/")
+package net.nextcluster.plugin.rest;
+
+import dev.httpmarco.osgon.configuration.gson.JsonUtils;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import net.nextcluster.plugin.NextClusterPlugin;
+import spark.Spark;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class RestServer {
+
+    public static void init() {
+        Spark.port(8080);
+        Spark.get(
+            "/information",
+            (request, response) -> JsonUtils.toPrettyJson(NextClusterPlugin.instance().currentInformation())
+        );
     }
-}
 
-dependencies {
-    compileOnly(project(":pre-vm"))
-
-    compileOnly("com.velocitypowered:velocity-api:3.3.0-SNAPSHOT")
-    annotationProcessor("com.velocitypowered:velocity-api:3.3.0-SNAPSHOT")
-    compileOnly("net.md-5:bungeecord-api:1.20-R0.2")
-    compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
-    implementation(libs.spark)
-}
-
-tasks.shadowJar {
-    archiveFileName.set("nextcluster-plugin.jar")
 }
