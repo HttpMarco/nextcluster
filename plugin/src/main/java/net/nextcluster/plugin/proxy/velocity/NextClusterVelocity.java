@@ -134,7 +134,6 @@ public class NextClusterVelocity extends NextClusterProxy {
             this.server.getPlayerCount(),
             this.server.getConfiguration().getShowMaxPlayers(),
             ((TextComponent) this.server.getConfiguration().getMotd()).content(),
-            Platform.valueOf(System.getenv("PLATFORM")),
             this.server.getAllPlayers()
                 .stream()
                 .map(player -> new Pair<>(player.getUniqueId(), player.getUsername()))
