@@ -42,9 +42,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.jar.JarInputStream;
 import java.util.stream.Collectors;
 
 @Accessors(fluent = true)
@@ -62,6 +60,10 @@ public class PreVM extends NextCluster {
     }
 
     public static void premain(String args, Instrumentation instrumentation) {
+        try {
+            instrumentation.appendToSystemClassLoaderSearch(new JarFile("platform.jar"));
+        } catch (IOException ignore) {
+        }
     }
 
     @SneakyThrows
@@ -76,7 +78,7 @@ public class PreVM extends NextCluster {
             preVM.platform(Platform.valueOf(env));
         } catch (IllegalArgumentException e) {
             throw new IllegalStateException("No platform found for " + env +
-                "(" + Arrays.stream(Platform.values()).map(Enum::name).collect(Collectors.joining(", ")) + ")"
+                    "(" + Arrays.stream(Platform.values()).map(Enum::name).collect(Collectors.joining(", ")) + ")"
             );
         }
 
@@ -106,9 +108,13 @@ public class PreVM extends NextCluster {
         if (this.platform.eula()) {
             File eula = new File("eula.txt");
 
-            if (!eula.exists() && eula.createNewFile()) {
-                LOGGER.info("No eula.txt found, accepting EULA...");
-                Files.writeString(eula.toPath(), "eula=true");
+            try {
+                if (!eula.exists() && eula.createNewFile()) {
+                    LOGGER.info("No eula.txt found, accepting EULA...");
+                    Files.writeString(eula.toPath(), "eula=true");
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
 
@@ -117,7 +123,7 @@ public class PreVM extends NextCluster {
             jar.close();
 
             LOGGER.info("Invoke Main-Class ({})", mainClass);
-            final var main = classLoader.loadClass(mainClass).getMethod("main", String[].class);
+            final var main = Class.forName(mainClass, true, classLoader).getMethod("main", String[].class);
             main.invoke(null, (Object) platform.args());
         } catch (Exception e) {
             e.printStackTrace(System.err);

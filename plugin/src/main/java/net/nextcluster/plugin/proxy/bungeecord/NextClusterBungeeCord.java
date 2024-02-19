@@ -25,26 +25,52 @@
 package net.nextcluster.plugin.proxy.bungeecord;
 
 import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.event.PreLoginEvent;
 import net.md_5.bungee.api.event.ServerConnectEvent;
 import net.md_5.bungee.api.event.ServerKickEvent;
+import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
 
 
 @SuppressWarnings("unused")
-public class NextClusterBungeeCord extends Plugin {
+public class NextClusterBungeeCord extends Plugin implements Listener {
 
     private final BungeeCordProxy proxy = new BungeeCordProxy();
 
     @Override
     public void onEnable() {
+        ProxyServer.getInstance().getConfigurationAdapter().getServers().clear();
+        ProxyServer.getInstance().getServers().clear();
+
+        System.out.println("#########################34344");
+
+        for (var listener : ProxyServer.getInstance().getConfigurationAdapter().getListeners()) {
+            listener.getServerPriority().clear();
+        }
+
+        ProxyServer.getInstance().getPluginManager().registerListener(this, this);
         proxy.watch();
+    }
+
+
+    @EventHandler
+    public void handle(PreLoginEvent event) {
+        if (ProxyServer.getInstance().getServers().isEmpty()) {
+            event.setReason(TextComponent.fromLegacy("No fallback server available"));
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler
     public void handle(ServerConnectEvent event) {
-        proxy.findFallback().ifPresentOrElse(event::setTarget, () -> {
-            event.getPlayer().disconnect(TextComponent.fromLegacy("No fallback server available"));
+        proxy.findFallback().ifPresentOrElse(serverInfo -> {
+            System.out.println("Connecting to " + serverInfo.getName());
+            event.setTarget(serverInfo);
+        }, () -> {
+            System.out.println("not found ding");
+            event.getPlayer().disconnect("No fallback server available");
             event.setCancelled(true);
         });
     }

@@ -23,7 +23,11 @@ public final class ClientClusterPlayerProvider implements PlayerProvider {
 
     @Override
     public ThreadAsyncExecutor<Boolean> isOnlineAsync(String username) {
-        return null;
+        var executor = new ThreadAsyncExecutor<Boolean>();
+
+       // NextCluster.instance().transmitter().request("nextcluster", new JsonDocument(), ClusterPl);
+
+        return executor;
     }
 
     @Override
