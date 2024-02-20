@@ -71,6 +71,12 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
     }
 
     @Override
+    @JsonIgnore
+    public boolean isStatic() {
+        return this.getSpec().isStatic();
+    }
+
+    @Override
     public int minOnline() {
         return this.getSpec().getMinOnline();
     }
@@ -152,6 +158,7 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
             private ClusterPort[] ports;
             private ClusterVolume[] volumes;
             private String[] environment;
+            private String[] imagePullSecrets;
         }
 
         @Getter
@@ -162,6 +169,14 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
             private Integer port;
             private Integer expose;
             private String protocol;
+
+            public ContainerPort toContainerPort() {
+                return new ContainerPortBuilder()
+                    .withName(this.name)
+                    .withContainerPort(this.port)
+                    .withProtocol(this.protocol)
+                    .build();
+            }
         }
 
         @Getter

@@ -61,6 +61,11 @@ spec:
                       default: []
                       items:
                         type: string
+                    imagePullSecrets:
+                      type: array
+                      default: []
+                      items:
+                        type: string
                 maintenance:
                   type: boolean
                   default: false

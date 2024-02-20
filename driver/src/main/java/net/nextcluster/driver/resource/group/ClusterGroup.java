@@ -46,6 +46,8 @@ public interface ClusterGroup {
 
     Platform platform();
 
+    boolean isStatic();
+
     Map<String, String> environment();
 
     void shutdown();

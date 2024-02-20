@@ -49,27 +49,29 @@ import java.util.stream.Collectors;
 @Getter
 public class PreVM extends NextCluster {
 
+    private static final Path WORKING_DIR = System.getenv().containsKey("STATIC") ?
+        Path.of("/data/static") : Path.of("/data");
+
     private final String[] args;
     private final AccessibleClassLoader classLoader = new AccessibleClassLoader();
     @Setter(AccessLevel.PACKAGE)
     private Platform platform;
 
-    protected PreVM(String[] args) {
+    private PreVM(String[] args) {
         super(new NettyClientTransmitter());
         this.args = args;
     }
 
     public static void premain(String args, Instrumentation instrumentation) {
         try {
-            instrumentation.appendToSystemClassLoaderSearch(new JarFile("platform.jar"));
-        } catch (IOException ignore) {
+            instrumentation.appendToSystemClassLoaderSearch(new JarFile(WORKING_DIR.resolve("platform.jar").toFile()));
+        } catch (Exception ignore) {
         }
     }
 
     @SneakyThrows
     public static void main(String[] args) {
         final PreVM preVM = new PreVM(args);
-
         final String env = System.getenv("PLATFORM");
         if (env == null) {
             throw new IllegalStateException("No PLATFORM environment variable found!");
@@ -78,23 +80,14 @@ public class PreVM extends NextCluster {
             preVM.platform(Platform.valueOf(env));
         } catch (IllegalArgumentException e) {
             throw new IllegalStateException("No platform found for " + env +
-                    "(" + Arrays.stream(Platform.values()).map(Enum::name).collect(Collectors.joining(", ")) + ")"
+                "(" + Arrays.stream(Platform.values()).map(Enum::name).collect(Collectors.joining(", ")) + ")"
             );
         }
 
-        final var platform = Path.of("platform.jar");
+        final var platform = WORKING_DIR.resolve("platform.jar");
         if (Files.notExists(platform)) {
             LOGGER.warn("No platform.jar found, downloading platform...");
             preVM.downloadPlatform(platform);
-        }
-
-        if (System.getenv().containsKey("STATIC") && Boolean.parseBoolean(System.getenv("STATIC"))) {
-            final Path staticFolder = Path.of("./static");
-            if (Files.notExists(staticFolder)) {
-                Files.copy(Path.of("/data"), staticFolder);
-            }
-            preVM.startPlatform(new File("./static/platform.jar"));
-            return;
         }
         preVM.startPlatform(platform.toFile());
     }
@@ -106,12 +99,22 @@ public class PreVM extends NextCluster {
         classLoader.addURL(file.toURI().toURL());
 
         if (this.platform.eula()) {
-            File eula = new File("eula.txt");
-
+            final var eula = WORKING_DIR.resolve("eula.txt").toFile();
             try {
                 if (!eula.exists() && eula.createNewFile()) {
                     LOGGER.info("No eula.txt found, accepting EULA...");
                     Files.writeString(eula.toPath(), "eula=true");
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            // TODO: Remove this, just for testing purposes
+            final var eula2 = new File("/data/eula.txt");
+            try {
+                if (!eula2.exists() && eula2.createNewFile()) {
+                    LOGGER.info("No eula2.txt found, accepting EULA...");
+                    Files.writeString(eula2.toPath(), "eula=true");
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);

@@ -39,6 +39,8 @@ public class Assembler {
     }
 
     private static void createPersistentVolume(KubernetesClient client) {
+        final var path = "/srv/nextcluster/%s/images".formatted(client.getNamespace());
+
         // @formatter:off
         final var resource = new PersistentVolumeBuilder()
             .withNewMetadata()
@@ -52,7 +54,7 @@ public class Assembler {
                 .withAccessModes("ReadWriteOnce")
                 .withPersistentVolumeReclaimPolicy("Retain")
                 .withNewHostPath()
-                    .withPath("/srv/nextcluster/images")
+                    .withPath(path)
                 .endHostPath()
                 .withNewClaimRef()
                     .withName("assembler-data")

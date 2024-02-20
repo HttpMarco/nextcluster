@@ -24,19 +24,16 @@
 
 package net.nextcluster.manager.resources.group;
 
-import dev.httpmarco.osgan.utils.data.Pair;
 import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
-import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.informers.ResourceEventHandler;
 import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.resource.group.NextGroup;
-import net.nextcluster.manager.resources.group.processor.DynamicGroupProcessor;
-import net.nextcluster.manager.resources.group.processor.GroupProcessor;
-import net.nextcluster.manager.resources.group.processor.StaticGroupProcessor;
+import net.nextcluster.manager.NextClusterManager;
 
-import java.util.*;
-import java.util.function.BiConsumer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -58,11 +55,80 @@ public class NextGroupWatcher implements ResourceEventHandler<NextGroup> {
     }
 
     private void deploy(NextGroup group) {
-        final KubernetesClient client = NextCluster.instance().kubernetes();
-        final GroupProcessor processor = group.getSpec().isStatic() ?
-            new StaticGroupProcessor() : new DynamicGroupProcessor();
+        final var client = NextCluster.instance().kubernetes();
+        final var ports = Stream.of(group.getSpec().getBase().getPorts())
+            .map(NextGroup.Spec.ClusterPort::toContainerPort)
+            .toList();
+        final var volumes = new ArrayList<>(List.of(group.getSpec().getBase().getVolumes()));
+        final var env = group.environment().entrySet().stream().map(entry -> new EnvVarBuilder()
+                .withName(entry.getKey())
+                .withValue(entry.getValue())
+                .build())
+            .collect((Supplier<ArrayList<EnvVar>>) ArrayList::new, ArrayList::add, ArrayList::addAll);
+        if (group.isStatic()) {
+            if (group.minOnline() > 1) {
+                throw new IllegalStateException("Static groups cannot have more than one services");
+            }
+            volumes.add(new NextGroup.Spec.ClusterVolume(
+                "data",
+                NextClusterManager.STATIC_SERVICES_PATH.get() + "/" + group.name(),
+                "/data/static"
+            ));
+            env.add(new EnvVarBuilder()
+                .withName("STATIC")
+                .withValue("true")
+                .build()
+            );
+        }
 
-        processor.deploy(group);
+        // @formatter:off
+        final var deployment = new DeploymentBuilder()
+            .withNewMetadata()
+                .withName(group.getMetadata().getName())
+                .withNamespace(group.getMetadata().getNamespace())
+                .addToLabels("nextcluster", "true")
+            .endMetadata()
+            .withNewSpec()
+                .withReplicas(group.minOnline())
+                .withSelector(
+                    new LabelSelectorBuilder()
+                        .addToMatchLabels("nextcluster/group", group.name())
+                        .build()
+                )
+                .withNewTemplate()
+                    .withNewMetadata()
+                        .addToLabels("nextcluster", "true")
+                        .addToLabels("nextcluster/group", group.name())
+                        .addToLabels("nextcluster/fallback", String.valueOf(group.isFallback()))
+                        .addToLabels("nextcluster/type", group.platform().type())
+                        .addToLabels("nextcluster/static", Boolean.toString(group.isStatic()))
+                    .endMetadata()
+                    .withNewSpec()
+                        .withServiceAccountName("nextcluster")
+                        .withImagePullSecrets(
+                            Arrays.stream(group.getSpec().getBase().getImagePullSecrets())
+                                .map(secret -> new LocalObjectReferenceBuilder().withName(secret).build())
+                                .toList())
+                        .addNewContainer()
+                            .withName("server")
+                            .withImage(group.image())
+                            .withTty()
+                            .withStdin()
+                            .withImagePullPolicy("Always")
+                            .addAllToPorts(ports)
+                            .addAllToEnv(env)
+                            .addAllToVolumeMounts(volumes.stream().map(NextGroup.Spec.ClusterVolume::toMount).toList())
+                            .withNewResources()
+                                .addToLimits("memory", new Quantity(group.maxMemory() + "Mi"))
+                            .endResources()
+                        .endContainer()
+                        .addAllToVolumes(volumes.stream().map(NextGroup.Spec.ClusterVolume::toVolume).toList())
+                    .endSpec()
+                .endTemplate()
+            .endSpec()
+            .build();
+        // @formatter:on
+        client.apps().deployments().resource(deployment).serverSideApply();
 
         Arrays.stream(group.getSpec().getBase().getPorts())
             .filter(port -> port.getExpose() != null)

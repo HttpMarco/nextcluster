@@ -37,6 +37,7 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 
 @Getter
 @Accessors(fluent = true)
@@ -51,20 +52,27 @@ public class SimpleClusterService implements ClusterService {
     @SneakyThrows
     @Override
     public ServiceInformation information() {
-        final var ip = asNative().getStatus().getPodIP();
-        if (ip == null) {
+        try {
+            final var ip = asNative().getStatus().getPodIP();
+            if (ip == null) {
+                return null;
+            }
+            final var request = HttpRequest.newBuilder(URI.create("http://%s:8080/information".formatted(ip)))
+                .GET()
+                .timeout(Duration.ofMillis(500L))
+                .build();
+            final var response = NextCluster.HTTP_CLIENT.send(
+                request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)
+            );
+            if (response.statusCode() != 200) {
+                NextCluster.LOGGER.error("Failed to retrieve service information from " + this.name);
+                return null;
+            }
+            return JsonUtils.fromJson(response.body(), ServiceInformation.class);
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
             return null;
         }
-        final var request = HttpRequest.newBuilder(URI.create("http://%s:8080/information".formatted(ip)))
-            .GET()
-            .build();
-        final var response = NextCluster.HTTP_CLIENT.send(
-            request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)
-        );
-        if (response.statusCode() != 200) {
-            throw new ServiceNotRespondException("Failed to retrieve service information from " + this.name);
-        }
-        return JsonUtils.fromJson(response.body(), ServiceInformation.class);
     }
 
     @Override

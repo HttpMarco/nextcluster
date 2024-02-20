@@ -27,6 +27,7 @@ package net.nextcluster.driver.resource.service;
 import dev.httpmarco.osgan.utils.data.Pair;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import net.nextcluster.driver.resource.Platform;
 
 import java.util.Collection;
@@ -34,6 +35,7 @@ import java.util.UUID;
 
 @Getter
 @RequiredArgsConstructor
+@ToString
 public class ServiceInformation {
 
     private final String name = System.getenv("HOSTNAME");

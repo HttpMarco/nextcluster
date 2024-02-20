@@ -35,7 +35,7 @@ import net.md_5.bungee.event.EventHandler;
 
 
 @SuppressWarnings("unused")
-public class NextClusterBungeeCord extends Plugin implements Listener {
+public final class NextClusterBungeeCord extends Plugin implements Listener {
 
     private final BungeeCordProxy proxy = new BungeeCordProxy();
 
@@ -70,7 +70,7 @@ public class NextClusterBungeeCord extends Plugin implements Listener {
             event.setTarget(serverInfo);
         }, () -> {
             System.out.println("not found ding");
-            event.getPlayer().disconnect("No fallback server available");
+            event.getPlayer().disconnect(TextComponent.fromLegacy("No fallback server available"));
             event.setCancelled(true);
         });
     }

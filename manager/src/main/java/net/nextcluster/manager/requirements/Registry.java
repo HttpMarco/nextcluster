@@ -40,6 +40,8 @@ public class Registry {
     }
 
     private static void createPersistentVolume(KubernetesClient client) {
+        final var path = "/srv/nextcluster/%s/registry".formatted(client.getNamespace());
+
         // @formatter:off
         final var resource = new PersistentVolumeBuilder()
                 .withNewMetadata()
@@ -53,7 +55,7 @@ public class Registry {
                     .withAccessModes("ReadWriteOnce")
                     .withPersistentVolumeReclaimPolicy("Retain")
                     .withNewHostPath()
-                        .withPath("/srv/nextcluster/registry")
+                        .withPath(path)
                     .endHostPath()
                     .withNewClaimRef()
                         .withName("registry-data")

@@ -26,7 +26,6 @@ package net.nextcluster.manager;
 
 import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.resource.group.NextGroup;
-import net.nextcluster.driver.resource.service.ClusterService;
 import net.nextcluster.manager.networking.NettyServerTransmitter;
 import net.nextcluster.manager.resources.group.NextGroupWatcher;
 import net.nextcluster.manager.resources.player.ManagerCloudPlayerProvider;
@@ -35,8 +34,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 
+import java.util.function.Supplier;
+
 @SpringBootApplication(exclude = {SecurityAutoConfiguration.class})
 public class NextClusterManager extends NextCluster {
+
+    public static final Supplier<String> STATIC_SERVICES_PATH = () ->
+        "/srv/nextcluster/%s/static".formatted(NextCluster.instance().kubernetes().getNamespace());
 
     protected NextClusterManager() {
         // register communication transmitter (priority)
@@ -65,9 +69,5 @@ public class NextClusterManager extends NextCluster {
         LOGGER.info("Custom resources successfully applied!");
         client.resources(NextGroup.class).inform(new NextGroupWatcher());
         LOGGER.info("NextClusterManager started in {}ms!", System.currentTimeMillis() - startup);
-
-        for (ClusterService service : NextCluster.instance().serviceProvider().getServices()) {
-            LOGGER.info("Service: {}", service.name());
-        }
     }
 }

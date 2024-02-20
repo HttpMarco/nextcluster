@@ -5,7 +5,7 @@ metadata: # ATTENTION: This metadata cannot be changed after creation!
   namespace: nextcluster
 spec:
   base:
-    image: 10.99.214.62:5000/lobby:latest
+    image: registry.nextcluster.net/pre-vm:latest
     environment:
       - PLATFORM=PAPER
       - VELOCITY_SECRET=2pOyTL6vI025
@@ -13,6 +13,6 @@ spec:
       - port: 25565
         protocol: TCP
   maintenance: false
-  maxMemory: 2048
+  maxMemory: 5000
   fallback: true
   static: true
