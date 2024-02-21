@@ -11,7 +11,7 @@ osgan = "1.0.14-20240218.215141-1"
 spark = "2.9.4"
 
 # logging
-log4j = "2.22.1"
+log4j = "2.23.0"
 slf4j = "2.0.12"
 
 #networking
