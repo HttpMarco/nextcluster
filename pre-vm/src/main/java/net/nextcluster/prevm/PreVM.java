@@ -49,8 +49,7 @@ import java.util.stream.Collectors;
 @Getter
 public class PreVM extends NextCluster {
 
-    private static final Path WORKING_DIR = System.getenv().containsKey("STATIC") ?
-        Path.of("/data/static") : Path.of("/data");
+    private static final Path WORKING_DIR = Path.of("/data");
 
     private final String[] args;
     private final AccessibleClassLoader classLoader = new AccessibleClassLoader();
@@ -104,17 +103,6 @@ public class PreVM extends NextCluster {
                 if (!eula.exists() && eula.createNewFile()) {
                     LOGGER.info("No eula.txt found, accepting EULA...");
                     Files.writeString(eula.toPath(), "eula=true");
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-            // TODO: Remove this, just for testing purposes
-            final var eula2 = new File("/data/eula.txt");
-            try {
-                if (!eula2.exists() && eula2.createNewFile()) {
-                    LOGGER.info("No eula2.txt found, accepting EULA...");
-                    Files.writeString(eula2.toPath(), "eula=true");
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);

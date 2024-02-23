@@ -27,17 +27,22 @@ package net.nextcluster.manager.resources.group;
 import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.client.informers.ResourceEventHandler;
+import lombok.SneakyThrows;
 import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.resource.group.NextGroup;
 import net.nextcluster.manager.NextClusterManager;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public class NextGroupWatcher implements ResourceEventHandler<NextGroup> {
+
+    private static final String START_COMMAND = "java -cp pre-vm.jar -javaagent:pre-vm.jar net.nextcluster.prevm.PreVM";
 
     @Override
     public void onAdd(NextGroup group) {
@@ -54,7 +59,10 @@ public class NextGroupWatcher implements ResourceEventHandler<NextGroup> {
         NextCluster.instance().kubernetes().apps().deployments().withName(obj.getMetadata().getName()).delete();
     }
 
+    @SneakyThrows
     private void deploy(NextGroup group) {
+        NextCluster.LOGGER.info("Deploying group: {}...", group.name());
+
         final var client = NextCluster.instance().kubernetes();
         final var ports = Stream.of(group.getSpec().getBase().getPorts())
             .map(NextGroup.Spec.ClusterPort::toContainerPort)
@@ -64,7 +72,7 @@ public class NextGroupWatcher implements ResourceEventHandler<NextGroup> {
                 .withName(entry.getKey())
                 .withValue(entry.getValue())
                 .build())
-            .collect((Supplier<ArrayList<EnvVar>>) ArrayList::new, ArrayList::add, ArrayList::addAll);
+            .toList();
         if (group.isStatic()) {
             if (group.minOnline() > 1) {
                 throw new IllegalStateException("Static groups cannot have more than one services");
@@ -72,12 +80,17 @@ public class NextGroupWatcher implements ResourceEventHandler<NextGroup> {
             volumes.add(new NextGroup.Spec.ClusterVolume(
                 "data",
                 NextClusterManager.STATIC_SERVICES_PATH.get() + "/" + group.name(),
-                "/data/static"
+                "/data"
             ));
-            env.add(new EnvVarBuilder()
-                .withName("STATIC")
-                .withValue("true")
-                .build()
+
+            final Path staticDir = Path.of("/static/" + group.name());
+            if (Files.notExists(staticDir)) {
+                Files.createDirectories(staticDir);
+            }
+            Files.copy(
+                Path.of("/data/pre-vm.jar"),
+                staticDir.resolve("pre-vm.jar"),
+                StandardCopyOption.REPLACE_EXISTING
             );
         }
 

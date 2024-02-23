@@ -89,7 +89,7 @@ public class FileWatcherThread extends Thread {
                         CommandLineTask.run("docker push " + image);
                         LOGGER.info("Image {} built and pushed successfully", image);
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        e.printStackTrace(System.err);
                     }
                 }
             });

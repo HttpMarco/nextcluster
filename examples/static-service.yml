@@ -16,3 +16,4 @@ spec:
   maxMemory: 5000
   fallback: true
   static: true
+  minOnline: 1
