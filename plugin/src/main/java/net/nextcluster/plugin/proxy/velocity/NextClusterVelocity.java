@@ -39,7 +39,6 @@ import dev.httpmarco.osgan.utils.data.Pair;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.nextcluster.driver.NextCluster;
-import net.nextcluster.driver.resource.Platform;
 import net.nextcluster.driver.resource.player.packets.ClusterPlayerConnectPacket;
 import net.nextcluster.driver.resource.player.packets.ClusterPlayerDisconnectPacket;
 import net.nextcluster.driver.resource.service.ServiceInformation;

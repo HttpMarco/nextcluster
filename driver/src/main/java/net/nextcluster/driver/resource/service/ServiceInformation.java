@@ -28,7 +28,8 @@ import dev.httpmarco.osgan.utils.data.Pair;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
-import net.nextcluster.driver.resource.Platform;
+import net.nextcluster.driver.resource.platform.Platform;
+import net.nextcluster.driver.resource.platform.PlatformService;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -42,7 +43,7 @@ public class ServiceInformation {
     private final int onlinePlayers;
     private final int maxPlayers;
     private final String motd;
-    private final Platform platform = Platform.detect();
+    private final Platform platform = PlatformService.detect();
     private final Collection<Pair<UUID, String>> players;
 
 }
