@@ -24,7 +24,7 @@
 
 package net.nextcluster.driver.networking.packets;
 
-import dev.httpmarco.osgon.configuration.gson.JsonDocument;
+import dev.httpmarco.osgon.files.configuration.gson.JsonDocument;
 import io.netty5.channel.Channel;
 
 public interface PacketResponder<T extends ClusterPacket> {

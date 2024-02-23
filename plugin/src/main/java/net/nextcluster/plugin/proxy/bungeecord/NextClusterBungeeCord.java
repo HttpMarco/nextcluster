@@ -44,8 +44,6 @@ public final class NextClusterBungeeCord extends Plugin implements Listener {
         ProxyServer.getInstance().getConfigurationAdapter().getServers().clear();
         ProxyServer.getInstance().getServers().clear();
 
-        System.out.println("#########################34344");
-
         for (var listener : ProxyServer.getInstance().getConfigurationAdapter().getListeners()) {
             listener.getServerPriority().clear();
         }
@@ -65,11 +63,7 @@ public final class NextClusterBungeeCord extends Plugin implements Listener {
 
     @EventHandler
     public void handle(ServerConnectEvent event) {
-        proxy.findFallback().ifPresentOrElse(serverInfo -> {
-            System.out.println("Connecting to " + serverInfo.getName());
-            event.setTarget(serverInfo);
-        }, () -> {
-            System.out.println("not found ding");
+        proxy.findFallback().ifPresentOrElse(event::setTarget, () -> {
             event.getPlayer().disconnect(TextComponent.fromLegacy("No fallback server available"));
             event.setCancelled(true);
         });

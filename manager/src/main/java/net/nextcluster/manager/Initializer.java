@@ -66,8 +66,8 @@ class Initializer {
             .endMetadata()
             .addNewRule()
                 .withApiGroups("", "apps")
-                .withResources("pods", "pods/log", "deployments", "services", "statefulsets", "events", "configmaps")
-                .withVerbs("get", "list", "watch", "create", "update", "delete")
+                .withResources("pods", "pods/log", "pods/exec", "deployments", "services", "statefulsets", "events", "configmaps")
+                .withVerbs("get", "list", "watch", "create", "update", "delete", "patch")
             .endRule()
             .build();
         // @formatter:on

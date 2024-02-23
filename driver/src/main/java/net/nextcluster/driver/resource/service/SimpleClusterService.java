@@ -24,14 +24,13 @@
 
 package net.nextcluster.driver.resource.service;
 
-import dev.httpmarco.osgon.configuration.gson.JsonUtils;
+import dev.httpmarco.osgon.files.configuration.gson.JsonUtils;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.dsl.PodResource;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import net.nextcluster.driver.NextCluster;
-import net.nextcluster.driver.exceptions.ServiceNotRespondException;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
@@ -82,7 +81,11 @@ public class SimpleClusterService implements ClusterService {
 
     @Override
     public void execute(String command) {
-        asResource().inContainer("server").exec(command);
+        asResource().inContainer("server")
+            .writingOutput(System.out)
+            .writingError(System.err)
+            .withTTY()
+            .exec(command);
     }
 
     @Override

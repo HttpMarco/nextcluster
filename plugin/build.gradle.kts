@@ -35,6 +35,9 @@ repositories {
 dependencies {
     compileOnly(project(":pre-vm"))
 
+    api(libs.minimessage)
+    implementation(libs.minimessage)
+
     compileOnly("com.velocitypowered:velocity-api:3.3.0-SNAPSHOT")
     annotationProcessor("com.velocitypowered:velocity-api:3.3.0-SNAPSHOT")
     compileOnly("net.md-5:bungeecord-api:1.20-R0.2")
