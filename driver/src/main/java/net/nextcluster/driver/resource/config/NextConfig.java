@@ -25,7 +25,7 @@
 package net.nextcluster.driver.resource.config;
 
 import com.google.common.base.Preconditions;
-import dev.httpmarco.osgon.configuration.gson.JsonUtils;
+import dev.httpmarco.osgon.files.configuration.gson.JsonUtils;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -78,7 +78,7 @@ public final class NextConfig<T> {
                 .withData(Map.of("value", JsonUtils.toPrettyJson(value)))
                 .build();
             // @formatter:on
-            NextCluster.instance().kubernetes().configMaps().resource(configMap).serverSideApply();
+            NextCluster.instance().kubernetes().configMaps().resource(configMap).forceConflicts();
         }
     }
 

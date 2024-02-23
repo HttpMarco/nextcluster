@@ -1,6 +1,6 @@
 package net.nextcluster.driver.event;
 
-import dev.httpmarco.osgon.configuration.gson.JsonUtils;
+import dev.httpmarco.osgon.files.configuration.gson.JsonUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Accessors;

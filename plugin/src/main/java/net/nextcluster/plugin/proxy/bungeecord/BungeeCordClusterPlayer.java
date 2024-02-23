@@ -1,6 +1,6 @@
 package net.nextcluster.plugin.proxy.bungeecord;
 
-import dev.httpmarco.osgon.configuration.ConfigExclude;
+import dev.httpmarco.osgon.files.configuration.ConfigExclude;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;

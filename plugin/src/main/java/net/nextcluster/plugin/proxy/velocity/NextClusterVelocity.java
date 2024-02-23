@@ -44,6 +44,7 @@ import net.nextcluster.driver.resource.player.packets.ClusterPlayerDisconnectPac
 import net.nextcluster.driver.resource.service.ServiceInformation;
 import net.nextcluster.plugin.proxy.InternalClusterServer;
 import net.nextcluster.plugin.proxy.NextClusterProxy;
+import net.nextcluster.plugin.proxy.velocity.command.VelocityClusterCommand;
 
 import java.net.InetSocketAddress;
 import java.util.Optional;
@@ -71,8 +72,10 @@ public class NextClusterVelocity extends NextClusterProxy {
         for (RegisteredServer registered : this.server.getAllServers()) {
             this.server.unregisterServer(registered.getServerInfo());
         }
-
         watch();
+
+        this.server.getCommandManager().register(VelocityClusterCommand.create("cluster", messages));
+        this.server.getCommandManager().register(VelocityClusterCommand.create("cloud", messages));
     }
 
     @Override

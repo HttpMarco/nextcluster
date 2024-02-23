@@ -27,21 +27,37 @@ package net.nextcluster.plugin;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import net.nextcluster.driver.resource.config.NextConfig;
+import net.nextcluster.driver.resource.config.misc.ConfigProperty;
 import net.nextcluster.driver.resource.service.ServiceInformation;
+import net.nextcluster.plugin.misc.IngameMessages;
 import net.nextcluster.plugin.rest.RestServer;
 
-@Setter
+@Getter
 @Accessors(fluent = true)
 public abstract class NextClusterPlugin {
 
     @Getter
     private static NextClusterPlugin instance;
 
+    @Setter
     private String motd;
+    @Setter
     private int maxPlayers;
+
+    protected NextConfig<IngameMessages> messages;
 
     protected void init() {
         instance = this;
+
+        messages = NextConfig.builder(IngameMessages.class)
+            .withId("ingame-messages")
+            .withProperties(ConfigProperty.OBSERVE, ConfigProperty.UPDATE_ORIGINAL)
+            .withDefault(IngameMessages::new)
+            .register();
+        if (!messages.exists()) {
+            messages.value(new IngameMessages());
+        }
 
         RestServer.init();
     }

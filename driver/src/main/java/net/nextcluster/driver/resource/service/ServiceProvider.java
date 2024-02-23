@@ -35,7 +35,7 @@ import java.util.concurrent.CompletionStage;
 public class ServiceProvider {
 
     @UnmodifiableView
-    public ImmutableList<ClusterService> getServices() {
+    public ImmutableList<ClusterService> services() {
         return ImmutableList.copyOf(
             NextCluster.instance()
                 .kubernetes()
@@ -49,11 +49,11 @@ public class ServiceProvider {
         );
     }
 
-    public CompletionStage<ImmutableList<ClusterService>> getServicesAsync() {
-        return CompletableFuture.supplyAsync(this::getServices);
+    public CompletionStage<ImmutableList<ClusterService>> servicesAsync() {
+        return CompletableFuture.supplyAsync(this::services);
     }
 
-    public Optional<ClusterService> getService(String name) {
+    public Optional<ClusterService> service(String name) {
         final var pod = NextCluster.instance().kubernetes().pods().withName(name).get();
         if (pod == null) {
             return Optional.empty();
@@ -61,8 +61,8 @@ public class ServiceProvider {
         return Optional.of(new SimpleClusterService(pod));
     }
 
-    public CompletionStage<Optional<ClusterService>> getServiceAsync(String name) {
-        return CompletableFuture.supplyAsync(() -> getService(name));
+    public CompletionStage<Optional<ClusterService>> serviceAsync(String name) {
+        return CompletableFuture.supplyAsync(() -> service(name));
     }
 
 }

@@ -25,7 +25,7 @@
 package net.nextcluster.driver.networking.transmitter;
 
 import dev.httpmarco.osgan.utils.types.ListUtils;
-import dev.httpmarco.osgon.configuration.gson.JsonDocument;
+import dev.httpmarco.osgon.files.configuration.gson.JsonDocument;
 import io.netty5.channel.Channel;
 import net.nextcluster.driver.networking.packets.ClusterPacket;
 import net.nextcluster.driver.networking.packets.PacketListener;

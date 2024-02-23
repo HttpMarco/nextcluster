@@ -1,6 +1,6 @@
 package net.nextcluster.driver.messaging;
 
-import dev.httpmarco.osgon.configuration.gson.JsonDocument;
+import dev.httpmarco.osgon.files.configuration.gson.JsonDocument;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Accessors;

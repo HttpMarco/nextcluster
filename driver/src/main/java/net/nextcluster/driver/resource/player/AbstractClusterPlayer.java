@@ -26,11 +26,11 @@ public abstract class AbstractClusterPlayer implements ClusterPlayer {
 
     @Override
     public ClusterService connectedClusterServer() {
-        return NextCluster.instance().serviceProvider().getService(connectedServerName).orElse(null);
+        return NextCluster.instance().serviceProvider().service(connectedServerName).orElse(null);
     }
 
     @Override
     public ClusterService connectedClusterProxy() {
-        return NextCluster.instance().serviceProvider().getService(connectedProxyName).orElse(null);
+        return NextCluster.instance().serviceProvider().service(connectedProxyName).orElse(null);
     }
 }

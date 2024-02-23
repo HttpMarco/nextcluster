@@ -7,8 +7,9 @@ gson = "2.10.1"
 #utils
 lombok = "1.18.30"
 annotations = "24.1.0"
-osgan = "1.0.14-20240218.215141-1"
+osgan = "1.0.15-20240222.131933-1"
 spark = "2.9.4"
+minimessage = "4.16.0"
 
 # logging
 log4j = "2.23.0"
@@ -31,7 +32,8 @@ lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" 
 annotations = { group = "org.jetbrains", name = "annotations", version.ref = "annotations" }
 osgan-utils = { group = "dev.httpmarco", name = "osgan-utils", version.ref = "osgan" }
 osgan-reflections = { group = "dev.httpmarco", name = "osgan-reflections", version.ref = "osgan" }
-osgan-configuration = { group = "dev.httpmarco", name = "osgan-configuration", version.ref = "osgan" }
+osgan-configuration = { group = "dev.httpmarco", name = "osgan-files", version.ref = "osgan" }
+minimessage = { group = "net.kyori", name = "adventure-text-minimessage", version.ref = "minimessage" }
 
 #logging
 slf4j = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }

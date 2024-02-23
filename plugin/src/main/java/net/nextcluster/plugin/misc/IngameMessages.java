@@ -22,37 +22,35 @@
  * SOFTWARE.
  */
 
-package net.nextcluster.driver.networking.request;
+package net.nextcluster.plugin.misc;
 
-import dev.httpmarco.osgon.files.configuration.gson.JsonDocument;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.experimental.Accessors;
-import net.nextcluster.driver.networking.packets.ByteBuffer;
-import net.nextcluster.driver.networking.packets.ClusterPacket;
-
-import java.util.UUID;
+import lombok.NoArgsConstructor;
 
 @Getter
-@Accessors(fluent = true)
+@NoArgsConstructor
 @AllArgsConstructor
-public class RequestPacket implements ClusterPacket {
+public final class IngameMessages {
 
-    private String id;
-    private UUID uniqueId;
-    private JsonDocument document;
+    private boolean minimessage = true;
+    private String prefix = "<dark_gray>» <bold><gray>next<white>Cluster<reset> <dark_gray>● <reset>";
+    private String help = """
+        %prefix% <gray>Cluster-Commands
+        <gold>/cluster <service> stop <gray>Stops a running service
+        <gold>/cluster <service> execute [command]<gray>Executes a command in the service
+        """.replace("%prefix%", prefix);
+    private String serviceStarted = """
+        %prefix% <gray>Service <gold>%service% <gray>has been <green>started
+        """.replace("%prefix%", prefix);
+    private String serviceStopped = """
+        %prefix% <gray>Service <gold>%service% <gray>has been <red>stopped
+        """.replace("%prefix%", prefix);
+    private String serviceNotFound = """
+        %prefix% <gray>Service <gold>%service% <gray>not found
+        """.replace("%prefix%", prefix);
+    private String commandExecutedOnService = """
+        %prefix% <gray>Command <yellow>%command% <gray>executed on service %service%<gold>
+        """.replace("%prefix%", prefix);
 
-    @Override
-    public void write(ByteBuffer buffer) {
-        buffer.writeString(id);
-        buffer.writeUUID(uniqueId);
-        buffer.writeString(document.toString());
-    }
-
-    @Override
-    public void read(ByteBuffer buffer) {
-        this.id = buffer.readString();
-        this.uniqueId = buffer.readUUID();
-        this.document = new JsonDocument(buffer.readString());
-    }
 }

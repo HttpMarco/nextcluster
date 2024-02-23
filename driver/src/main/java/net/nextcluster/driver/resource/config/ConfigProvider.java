@@ -24,7 +24,7 @@
 
 package net.nextcluster.driver.resource.config;
 
-import dev.httpmarco.osgon.configuration.gson.JsonUtils;
+import dev.httpmarco.osgon.files.configuration.gson.JsonUtils;
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
