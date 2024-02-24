@@ -1,19 +1,22 @@
 package net.nextcluster.plugin.proxy.bungeecord;
 
 import dev.httpmarco.osgan.utils.data.Pair;
-import lombok.AllArgsConstructor;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
-import net.nextcluster.driver.resource.Platform;
+import net.md_5.bungee.api.plugin.Plugin;
 import net.nextcluster.driver.resource.service.ServiceInformation;
 import net.nextcluster.plugin.proxy.InternalClusterServer;
 import net.nextcluster.plugin.proxy.NextClusterProxy;
+import net.nextcluster.plugin.proxy.bungeecord.comand.BungeeCordClusterCommand;
 
 import java.net.InetSocketAddress;
 import java.util.Optional;
 
-@AllArgsConstructor
 public final class BungeeCordProxy extends NextClusterProxy {
+
+    public BungeeCordProxy(Plugin plugin) {
+        ProxyServer.getInstance().getPluginManager().registerCommand(plugin, new BungeeCordClusterCommand(plugin, messages));
+    }
 
     @Override
     public void registerServer(InternalClusterServer server) {
@@ -39,13 +42,13 @@ public final class BungeeCordProxy extends NextClusterProxy {
     @Override
     public ServiceInformation currentInformation() {
         return new ServiceInformation(
-            ProxyServer.getInstance().getOnlineCount(),
-            ProxyServer.getInstance().getConfig().getPlayerLimit(),
-            "BungeeCord",
-            ProxyServer.getInstance().getPlayers()
-                .stream()
-                .map(player -> new Pair<>(player.getUniqueId(), player.getName()))
-                .toList()
+                ProxyServer.getInstance().getOnlineCount(),
+                ProxyServer.getInstance().getConfig().getPlayerLimit(),
+                "BungeeCord",
+                ProxyServer.getInstance().getPlayers()
+                        .stream()
+                        .map(player -> new Pair<>(player.getUniqueId(), player.getName()))
+                        .toList()
         );
     }
 

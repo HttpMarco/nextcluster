@@ -11,25 +11,35 @@ import net.nextcluster.driver.resource.player.ClusterPlayer;
 @Getter
 @Accessors(fluent = true)
 @AllArgsConstructor
-public abstract class AbstractClusterPlayerPacket implements ClusterPacket {
+public class AbstractClusterPlayerPacket implements ClusterPacket {
 
     private ClusterPlayer clusterPlayer;
 
     @Override
     public void write(ByteBuffer buffer) {
-        buffer.writeString(clusterPlayer.name());
-        buffer.writeUUID(clusterPlayer.uniqueId());
-        buffer.writeString(clusterPlayer.connectedProxyName());
-        buffer.writeString(clusterPlayer.connectedServerName());
+        buffer.writeBoolean(clusterPlayer != null);
+
+        if(clusterPlayer != null) {
+            buffer.writeString(clusterPlayer.name());
+            buffer.writeUUID(clusterPlayer.uniqueId());
+            buffer.writeString(clusterPlayer.connectedProxyName());
+            buffer.writeString(clusterPlayer.connectedServerName());
+        }
     }
 
     @Override
     public void read(ByteBuffer buffer) {
+        var state = buffer.readBoolean();
+
+        if(!state) {
+            return;
+        }
+
         var name = buffer.readString();
         var uuid = buffer.readUUID();
         var currentProxyName = buffer.readString();
         var currentServerName = buffer.readString();
 
-        NextCluster.instance().playerProvider().createPlayer(name, uuid, currentProxyName, currentServerName);
+        this.clusterPlayer = NextCluster.instance().playerProvider().createPlayer(name, uuid, currentProxyName, currentServerName);
     }
 }

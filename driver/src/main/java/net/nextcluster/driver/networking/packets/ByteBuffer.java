@@ -55,8 +55,8 @@ public class ByteBuffer {
         return this.buffer.readCharSequence(this.buffer.readInt(), StandardCharsets.UTF_8).toString();
     }
 
-    public ByteBuffer writeBoolean() {
-        this.buffer.writeBoolean(true);
+    public ByteBuffer writeBoolean(Boolean booleanValue) {
+        this.buffer.writeBoolean(booleanValue);
         return this;
     }
 
