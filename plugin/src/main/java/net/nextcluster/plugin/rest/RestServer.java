@@ -27,18 +27,29 @@ package net.nextcluster.plugin.rest;
 import dev.httpmarco.osgon.files.configuration.gson.JsonUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import net.nextcluster.driver.NextCluster;
 import net.nextcluster.plugin.NextClusterPlugin;
 import spark.Spark;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class RestServer {
 
+    private static final Integer REST_PORT = Integer.parseInt(System.getProperty("rest.port", "8080"));
+
     public static void init() {
-        Spark.port(8080);
+        NextCluster.LOGGER.info("Starting REST-Server on port {}...", REST_PORT);
+
+        Spark.port(REST_PORT);
         Spark.get(
             "/information",
             (request, response) -> JsonUtils.toPrettyJson(NextClusterPlugin.instance().currentInformation())
         );
+        Spark.post("/execute", (request, response) -> {
+            NextCluster.LOGGER.info("Execute command: '{}'...", request.body());
+            NextClusterPlugin.instance().dispatchCommand(request.body());
+            response.status(200);
+            return true;
+        });
     }
 
 }

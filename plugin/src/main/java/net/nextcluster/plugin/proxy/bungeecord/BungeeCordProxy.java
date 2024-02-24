@@ -48,4 +48,9 @@ public final class BungeeCordProxy extends NextClusterProxy {
                 .toList()
         );
     }
+
+    @Override
+    public void dispatchCommand(String command) {
+        ProxyServer.getInstance().getPluginManager().dispatchCommand(ProxyServer.getInstance().getConsole(), command);
+    }
 }

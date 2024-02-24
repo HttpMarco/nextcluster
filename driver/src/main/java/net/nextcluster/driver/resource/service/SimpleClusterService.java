@@ -81,7 +81,8 @@ public class SimpleClusterService implements ClusterService {
 
     @Override
     public void execute(String command) {
-        asResource().inContainer("server")
+        asResource()
+            .inContainer("server")
             .writingOutput(System.out)
             .writingError(System.err)
             .withTTY()

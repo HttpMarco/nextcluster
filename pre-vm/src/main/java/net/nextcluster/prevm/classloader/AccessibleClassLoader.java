@@ -29,8 +29,12 @@ import java.net.URLClassLoader;
 
 public class AccessibleClassLoader extends URLClassLoader {
 
-    public AccessibleClassLoader() {
-        super(new URL[]{}, ClassLoader.getSystemClassLoader());
+    static {
+        ClassLoader.registerAsParallelCapable();
+    }
+
+    public AccessibleClassLoader(URL[] urls) {
+        super(urls, ClassLoader.getSystemClassLoader());
     }
 
     @Override

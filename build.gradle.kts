@@ -60,6 +60,12 @@ subprojects {
         }
     }
 
+    tasks.withType<Jar> {
+        manifest {
+            attributes["Implementation-Version"] = version
+        }
+    }
+
     if (hasProperty("REPOSITORY_USERNAME") && project.name == "driver") {
         publishing {
             publications {

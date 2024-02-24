@@ -50,9 +50,10 @@ import java.util.stream.Collectors;
 public class PreVM extends NextCluster {
 
     private static final Path WORKING_DIR = Path.of("/data");
+    private static Instrumentation instrumentation;
 
     private final String[] args;
-    private final AccessibleClassLoader classLoader = new AccessibleClassLoader();
+    private AccessibleClassLoader classLoader;
     @Setter(AccessLevel.PACKAGE)
     private Platform platform;
 
@@ -62,10 +63,7 @@ public class PreVM extends NextCluster {
     }
 
     public static void premain(String args, Instrumentation instrumentation) {
-        try {
-            instrumentation.appendToSystemClassLoaderSearch(new JarFile(WORKING_DIR.resolve("platform.jar").toFile()));
-        } catch (Exception ignore) {
-        }
+        PreVM.instrumentation = instrumentation;
     }
 
     @SneakyThrows
@@ -88,36 +86,40 @@ public class PreVM extends NextCluster {
             LOGGER.warn("No platform.jar found, downloading platform...");
             preVM.downloadPlatform(platform);
         }
+
+        instrumentation.appendToSystemClassLoaderSearch(new JarFile(platform.toFile()));
+
         preVM.startPlatform(platform.toFile());
     }
 
     @SneakyThrows
     private void startPlatform(File file) {
-        final var jar = new JarFile(file);
-
-        classLoader.addURL(file.toURI().toURL());
-
-        if (this.platform.eula()) {
-            final var eula = WORKING_DIR.resolve("eula.txt").toFile();
-            try {
-                if (!eula.exists() && eula.createNewFile()) {
-                    LOGGER.info("No eula.txt found, accepting EULA...");
-                    Files.writeString(eula.toPath(), "eula=true");
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        try {
+        this.classLoader = new AccessibleClassLoader(new URL[]{file.toURI().toURL()});
+        try (final var jar = new JarFile(file)) {
             final var mainClass = jar.getManifest().getMainAttributes().getValue("Main-Class");
-            jar.close();
+            if (this.platform.eula()) {
+                final var eula = WORKING_DIR.resolve("eula.txt").toFile();
+                try {
+                    if (!eula.exists() && eula.createNewFile()) {
+                        LOGGER.info("No eula.txt found, accepting EULA...");
+                        Files.writeString(eula.toPath(), "eula=true");
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            final var thread = Thread.ofPlatform().name("platform-thread").unstarted(() -> {
+                try {
+                    LOGGER.info("Invoke Main-Class ({})", mainClass);
 
-            LOGGER.info("Invoke Main-Class ({})", mainClass);
-            final var main = Class.forName(mainClass, true, classLoader).getMethod("main", String[].class);
-            main.invoke(null, (Object) platform.args());
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
+                    final var main = classLoader.loadClass(mainClass).getMethod("main", String[].class);
+                    main.invoke(null, (Object) platform.args());
+                } catch (Exception e) {
+                    e.printStackTrace(System.err);
+                }
+            });
+            thread.setContextClassLoader(classLoader);
+            thread.start();
         }
     }
 

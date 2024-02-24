@@ -143,4 +143,9 @@ public class NextClusterVelocity extends NextClusterProxy {
                 .toList()
         );
     }
+
+    @Override
+    public void dispatchCommand(String command) {
+        this.server.getCommandManager().executeAsync(this.server.getConsoleCommandSource(), command);
+    }
 }

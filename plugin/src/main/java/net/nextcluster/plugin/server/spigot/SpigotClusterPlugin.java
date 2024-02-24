@@ -22,48 +22,45 @@
  * SOFTWARE.
  */
 
-package net.nextcluster.plugin;
+package net.nextcluster.plugin.server.spigot;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.Accessors;
-import net.nextcluster.driver.resource.config.NextConfig;
-import net.nextcluster.driver.resource.config.misc.ConfigProperty;
+import dev.httpmarco.osgan.utils.data.Pair;
+import net.kyori.adventure.text.TextComponent;
 import net.nextcluster.driver.resource.service.ServiceInformation;
-import net.nextcluster.plugin.misc.IngameMessages;
-import net.nextcluster.plugin.rest.RestServer;
+import net.nextcluster.plugin.NextClusterPlugin;
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.java.JavaPlugin;
 
-@Getter
-@Accessors(fluent = true)
-public abstract class NextClusterPlugin {
+public final class SpigotClusterPlugin extends JavaPlugin {
 
-    @Getter
-    private static NextClusterPlugin instance;
-
-    @Setter
-    private String motd;
-    @Setter
-    private int maxPlayers;
-
-    protected NextConfig<IngameMessages> messages;
-
-    protected void init() {
-        instance = this;
-
-        messages = NextConfig.builder(IngameMessages.class)
-            .withId("ingame-messages")
-            .withProperties(ConfigProperty.OBSERVE, ConfigProperty.UPDATE_ORIGINAL)
-            .withDefault(IngameMessages::new)
-            .register();
-        if (!messages.exists()) {
-            messages.value(new IngameMessages());
-        }
-
-        RestServer.init();
+    @Override
+    public void onEnable() {
+        new ClusterPlugin();
     }
 
-    public abstract ServiceInformation currentInformation();
+    private static class ClusterPlugin extends NextClusterPlugin {
 
-    public abstract void dispatchCommand(String command);
+        public ClusterPlugin() {
+            init();
+        }
+
+        @Override
+        public ServiceInformation currentInformation() {
+            return new ServiceInformation(
+                Bukkit.getOnlinePlayers().size(),
+                Bukkit.getMaxPlayers(),
+                ((TextComponent) Bukkit.motd()).content(),
+                Bukkit.getOnlinePlayers()
+                    .stream()
+                    .map(player -> new Pair<>(player.getUniqueId(), player.getName()))
+                    .toList()
+            );
+        }
+
+        @Override
+        public void dispatchCommand(String command) {
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+        }
+    }
 
 }
