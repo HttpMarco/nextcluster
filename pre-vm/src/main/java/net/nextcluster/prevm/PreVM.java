@@ -77,7 +77,7 @@ public class PreVM extends NextCluster {
             preVM.platform(Platform.valueOf(env));
         } catch (IllegalArgumentException e) {
             throw new IllegalStateException("No platform found for " + env +
-                "(" + Arrays.stream(Platform.values()).map(Enum::name).collect(Collectors.joining(", ")) + ")"
+                    "(" + Arrays.stream(Platform.values()).map(Enum::name).collect(Collectors.joining(", ")) + ")"
             );
         }
 
@@ -87,7 +87,8 @@ public class PreVM extends NextCluster {
             preVM.downloadPlatform(platform);
         }
 
-        instrumentation.appendToSystemClassLoaderSearch(new JarFile(platform.toFile()));
+        // TODO: Fix (paper) classloader broke
+        //instrumentation.appendToSystemClassLoaderSearch(new JarFile(platform.toFile()));
 
         preVM.startPlatform(platform.toFile());
     }
@@ -108,18 +109,14 @@ public class PreVM extends NextCluster {
                     throw new RuntimeException(e);
                 }
             }
-            final var thread = Thread.ofPlatform().name("platform-thread").unstarted(() -> {
-                try {
-                    LOGGER.info("Invoke Main-Class ({})", mainClass);
+            try {
+                LOGGER.info("Invoke Main-Class ({})", mainClass);
 
-                    final var main = classLoader.loadClass(mainClass).getMethod("main", String[].class);
-                    main.invoke(null, (Object) platform.args());
-                } catch (Exception e) {
-                    e.printStackTrace(System.err);
-                }
-            });
-            thread.setContextClassLoader(classLoader);
-            thread.start();
+                final var main = Class.forName(mainClass, true, classLoader).getMethod("main", String[].class);
+                main.invoke(null, (Object) platform.args());
+            } catch (Exception e) {
+                e.printStackTrace(System.err);
+            }
         }
     }
 
