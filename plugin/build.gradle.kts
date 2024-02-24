@@ -45,6 +45,20 @@ dependencies {
     implementation(libs.spark)
 }
 
+tasks.withType<Jar> {
+    val plugin = projectDir.resolve("src/main/resources/plugin.yml")
+    if (!plugin.exists()) {
+        plugin.createNewFile()
+    }
+    plugin.writeText(
+        """
+        name: NextCluster
+        author: HabsGleich
+        version: %s
+        main: net.nextcluster.plugin.server.spigot.SpigotClusterPlugin
+    """.trimIndent().format(project.version))
+}
+
 tasks.shadowJar {
     archiveFileName.set("nextcluster-plugin.jar")
 }

@@ -104,6 +104,9 @@ public abstract class NextCluster {
         LOGGER.info("| |\\  |  __/>  <| |_| |____| | |_| \\__ \\ ||  __/ |   ");
         LOGGER.info("|_| \\_|\\___/_/\\_\\\\__|\\_____|_|\\__,_|___/\\__\\___|_|");
         LOGGER.info(" ");
+        LOGGER.info(" Version: " + getClass().getPackage().getImplementationVersion());
+        LOGGER.info(" GitHub: https://github.com/nextCluster/nextCluster");
+        LOGGER.info(" ");
     }
 
     @SneakyThrows

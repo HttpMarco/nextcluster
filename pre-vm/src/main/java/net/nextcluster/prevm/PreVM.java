@@ -42,6 +42,7 @@ import net.nextcluster.prevm.networking.NettyClientTransmitter;
 import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.jar.JarFile;
@@ -51,9 +52,10 @@ import java.util.jar.JarFile;
 public class PreVM extends NextCluster {
 
     private static final Path WORKING_DIR = Path.of("/data");
+    private static Instrumentation instrumentation;
 
     private final String[] args;
-    private final AccessibleClassLoader classLoader = new AccessibleClassLoader();
+    private AccessibleClassLoader classLoader;
     @Setter(AccessLevel.PACKAGE)
     private Platform platform;
 
@@ -63,10 +65,7 @@ public class PreVM extends NextCluster {
     }
 
     public static void premain(String args, Instrumentation instrumentation) {
-        try {
-            instrumentation.appendToSystemClassLoaderSearch(new JarFile(WORKING_DIR.resolve("platform.jar").toFile()));
-        } catch (Exception ignore) {
-        }
+        PreVM.instrumentation = instrumentation;
     }
 
     @SneakyThrows
@@ -89,41 +88,45 @@ public class PreVM extends NextCluster {
                 downloadablePlatform.download(WORKING_DIR);
             }
         }
+
+        instrumentation.appendToSystemClassLoaderSearch(new JarFile(platform.toFile()));
+
         preVM.startPlatform(platform.toFile());
     }
 
     @SneakyThrows
     private void startPlatform(File file) {
-        final var jar = new JarFile(file);
-
-        classLoader.addURL(file.toURI().toURL());
-
-        if (this.platform instanceof PaperPlatform) {
-            final var eula = WORKING_DIR.resolve("eula.txt").toFile();
-            try {
-                if (!eula.exists() && eula.createNewFile()) {
-                    LOGGER.info("No eula.txt found, accepting EULA...");
-                    Files.writeString(eula.toPath(), "eula=true");
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        try {
+        this.classLoader = new AccessibleClassLoader(new URL[]{file.toURI().toURL()});
+        try (final var jar = new JarFile(file)) {
             final var mainClass = jar.getManifest().getMainAttributes().getValue("Main-Class");
-            jar.close();
-
-            LOGGER.info("Invoke Main-Class ({})", mainClass);
-            final var main = Class.forName(mainClass, true, classLoader).getMethod("main", String[].class);
-
-            if (platform instanceof PlatformArgs platformArgs) {
-                main.invoke(null, (Object) platformArgs.args());
-            } else {
-                main.invoke(null, (Object) new String[0]);
+            if (this.platform instanceof PaperPlatform) {
+                final var eula = WORKING_DIR.resolve("eula.txt").toFile();
+                try {
+                    if (!eula.exists() && eula.createNewFile()) {
+                        LOGGER.info("No eula.txt found, accepting EULA...");
+                        Files.writeString(eula.toPath(), "eula=true");
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
+            final var thread = Thread.ofPlatform().name("platform-thread").unstarted(() -> {
+                try {
+                    LOGGER.info("Invoke Main-Class ({})", mainClass);
+
+                    final var main = classLoader.loadClass(mainClass).getMethod("main", String[].class);
+
+                    if (platform instanceof PlatformArgs platformArgs) {
+                        main.invoke(null, (Object) platformArgs.args());
+                    } else {
+                        main.invoke(null, (Object) new String[0]);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace(System.err);
+                }
+            });
+            thread.setContextClassLoader(classLoader);
+            thread.start();
         }
     }
 }
