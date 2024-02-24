@@ -65,8 +65,10 @@ class Initializer {
                 .withNamespace(client.getNamespace())
             .endMetadata()
             .addNewRule()
-                .withApiGroups("", "apps")
-                .withResources("pods", "pods/log", "pods/exec", "deployments", "services", "statefulsets", "events", "configmaps")
+                .withApiGroups("", "apps", "nextcluster.net")
+                .withResources(
+                    "pods", "pods/log", "pods/exec", "deployments", "services", "statefulsets",
+                    "events", "configmaps", "groups")
                 .withVerbs("get", "list", "watch", "create", "update", "delete", "patch")
             .endRule()
             .build();

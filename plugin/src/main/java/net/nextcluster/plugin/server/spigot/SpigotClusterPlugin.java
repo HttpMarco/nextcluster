@@ -33,8 +33,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public final class SpigotClusterPlugin extends JavaPlugin {
 
+    private static SpigotClusterPlugin plugin;
+
     @Override
     public void onEnable() {
+        plugin = this;
         new ClusterPlugin();
     }
 
@@ -59,7 +62,7 @@ public final class SpigotClusterPlugin extends JavaPlugin {
 
         @Override
         public void dispatchCommand(String command) {
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+            Bukkit.getScheduler().runTask(plugin, () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command));
         }
     }
 

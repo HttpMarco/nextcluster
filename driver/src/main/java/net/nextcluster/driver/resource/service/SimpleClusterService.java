@@ -81,12 +81,11 @@ public class SimpleClusterService implements ClusterService {
 
     @Override
     public void execute(String command) {
-        asResource()
-            .inContainer("server")
-            .writingOutput(System.out)
-            .writingError(System.err)
-            .withTTY()
-            .exec(command);
+        final var request = HttpRequest.newBuilder()
+            .uri(URI.create("http://%s:8080/execute".formatted(asNative().getStatus().getPodIP())))
+            .POST(HttpRequest.BodyPublishers.ofString(command))
+            .build();
+        NextCluster.HTTP_CLIENT.sendAsync(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
     }
 
     @Override

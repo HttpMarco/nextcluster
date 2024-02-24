@@ -42,5 +42,7 @@ tasks.shadowJar {
     relocate("org.apache.logging.log4j", "net.nextcluster.prevm.shaded.log4j")
 
 
+
+    relocate("org.apache.logging.log4j", "net.nextcluster.prevm.shaded.log4j")
     archiveFileName.set("pre-vm.jar")
 }

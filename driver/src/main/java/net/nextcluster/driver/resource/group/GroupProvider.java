@@ -31,6 +31,8 @@ import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 public class GroupProvider {
 
@@ -40,7 +42,7 @@ public class GroupProvider {
 
     @SneakyThrows
     @UnmodifiableView
-    public List<ClusterGroup> list() {
+    public List<ClusterGroup> groups() {
         return NextCluster.instance()
             .kubernetes()
             .resources(NextGroup.class)
@@ -51,8 +53,18 @@ public class GroupProvider {
             .toList();
     }
 
-    public Optional<ClusterGroup> get(String name) {
+    @SneakyThrows
+    @UnmodifiableView
+    public CompletionStage<List<ClusterGroup>> groupsAsync() {
+        return CompletableFuture.supplyAsync(this::groups);
+    }
+
+    public Optional<ClusterGroup> group(String name) {
         return Optional.ofNullable(NextCluster.instance().kubernetes().resources(NextGroup.class).withName(name).get());
+    }
+
+    public CompletionStage<Optional<ClusterGroup>> groupAsync(String name) {
+        return CompletableFuture.supplyAsync(() -> group(name));
     }
 
     public void delete(String name) {
