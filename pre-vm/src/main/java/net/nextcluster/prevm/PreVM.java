@@ -90,7 +90,6 @@ public class PreVM extends NextCluster {
         }
 
         instrumentation.appendToSystemClassLoaderSearch(new JarFile(platform.toFile()));
-
         preVM.startPlatform(platform.toFile());
     }
 
