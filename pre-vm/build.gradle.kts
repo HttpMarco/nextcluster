@@ -30,7 +30,6 @@ dependencies {
     api(project(":driver"))
     implementation(project(":driver"))
     implementation(libs.log4j)
-    implementation("com.lmax:disruptor:4.0.0")
 }
 
 tasks.shadowJar {
@@ -39,6 +38,9 @@ tasks.shadowJar {
         attributes["Premain-Class"] = "net.nextcluster.prevm.PreVM"
         attributes["Multi-Release"] = "true"
     }
+
+    relocate("org.apache.logging.log4j", "net.nextcluster.prevm.shaded.log4j")
+
 
     archiveFileName.set("pre-vm.jar")
 }
