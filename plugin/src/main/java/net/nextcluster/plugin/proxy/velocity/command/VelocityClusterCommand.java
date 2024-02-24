@@ -25,24 +25,23 @@
 package net.nextcluster.plugin.proxy.velocity.command;
 
 import com.mojang.brigadier.Command;
-import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
-import it.unimi.dsi.fastutil.booleans.BooleanArrays;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.resource.config.NextConfig;
 import net.nextcluster.driver.resource.group.ClusterGroup;
 import net.nextcluster.driver.resource.service.ClusterService;
+import net.nextcluster.plugin.ClusterCommand;
 import net.nextcluster.plugin.NextClusterPlugin;
 import net.nextcluster.plugin.misc.IngameMessages;
 
-public final class VelocityClusterCommand {
+public final class VelocityClusterCommand implements ClusterCommand {
 
     private static final Command<CommandSource> SEND_HELP = context -> {
         final var player = (Player) context.getSource();
@@ -52,6 +51,7 @@ public final class VelocityClusterCommand {
 
     public static BrigadierCommand create(String name, NextConfig<IngameMessages> messages) {
         final var node = BrigadierCommand.literalArgumentBuilder(name)
+            .requires(source -> source.hasPermission(PERMISSION))
             .executes(SEND_HELP)
             .then(
                 BrigadierCommand.literalArgumentBuilder("service")

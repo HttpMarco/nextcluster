@@ -287,6 +287,7 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
                 .kubernetes()
                 .resources(NextGroup.class)
                 .resource(group)
+                .forceConflicts()
                 .serverSideApply();
         }
 
