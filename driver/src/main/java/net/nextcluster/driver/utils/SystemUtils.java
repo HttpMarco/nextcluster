@@ -22,35 +22,30 @@
  * SOFTWARE.
  */
 
-plugins {
-    id("org.springframework.boot") version "3.3.0-SNAPSHOT"
-    id("io.spring.dependency-management") version "1.1.4"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
-}
+package net.nextcluster.driver.utils;
 
-repositories {
-    maven { url = uri("https://repo.spring.io/milestone") }
-    maven { url = uri("https://repo.spring.io/snapshot") }
-}
+import com.sun.management.OperatingSystemMXBean;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
-dependencies {
-    implementation(project(":driver"))
-    implementation("io.jsonwebtoken:jjwt:0.12.5")
+import java.lang.management.ManagementFactory;
+import java.text.DecimalFormat;
 
-    implementation("org.springframework.boot:spring-boot-starter-web") {
-        exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class SystemUtils {
+
+    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.00");
+
+    public static double cpuUsage() {
+        final var factory = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+        return Double.parseDouble(DECIMAL_FORMAT.format(MathUtils.percentage(factory.getCpuLoad())));
     }
-    implementation("org.springframework.boot:spring-boot-starter-security")
-    annotationProcessor(libs.crd)
 
-    testImplementation(project(":driver"))
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.springframework.security:spring-security-test")
-}
-
-tasks.withType<Jar> {
-    manifest {
-        attributes["Main-Class"] = "net.nextcluster.manager.NextClusterManager"
+    public static long memoryUsage() {
+        final var runtime = Runtime.getRuntime();
+        final var maxMemory = runtime.maxMemory() / (1024 * 1024);
+        final var freeMemory = runtime.freeMemory() / (1024 * 1024);
+        return maxMemory - freeMemory;
     }
-    archiveFileName.set("manager.jar")
+
 }

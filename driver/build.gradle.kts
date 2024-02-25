@@ -31,6 +31,5 @@ dependencies {
     api(libs.netty5)
     api(libs.bundles.osgan)
 
-    annotationProcessor(libs.crd)
     compileOnly(libs.crd)
 }

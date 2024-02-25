@@ -29,6 +29,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import net.nextcluster.driver.resource.Platform;
+import net.nextcluster.driver.utils.SystemUtils;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -36,7 +37,7 @@ import java.util.UUID;
 @Getter
 @RequiredArgsConstructor
 @ToString
-public class ServiceInformation {
+public final class ServiceInformation {
 
     private final String name = System.getenv("HOSTNAME");
     private final int onlinePlayers;
@@ -44,5 +45,10 @@ public class ServiceInformation {
     private final String motd;
     private final Platform platform = Platform.detect();
     private final Collection<Pair<UUID, String>> players;
+
+    // Memory
+    private final double cpu = SystemUtils.cpuUsage();
+    private final long memoryUsage = SystemUtils.memoryUsage();
+    private final long maxMemory = Runtime.getRuntime().maxMemory() / (1024 * 1024);
 
 }

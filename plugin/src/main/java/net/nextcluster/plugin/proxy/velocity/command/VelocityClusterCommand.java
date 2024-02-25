@@ -51,7 +51,7 @@ public final class VelocityClusterCommand implements ClusterCommand {
 
     public static BrigadierCommand create(String name, NextConfig<IngameMessages> messages) {
         final var node = BrigadierCommand.literalArgumentBuilder(name)
-            .requires(source -> source.hasPermission(PERMISSION))
+            //.requires(source -> source.hasPermission(PERMISSION))
             .executes(SEND_HELP)
             .then(
                 BrigadierCommand.literalArgumentBuilder("service")
@@ -291,6 +291,13 @@ public final class VelocityClusterCommand implements ClusterCommand {
         );
         sendMessage(
             player, prefix + " <dark_gray>   » <gray>Platform: <white>" + information.getPlatform().name()
+        );
+        sendMessage(
+            player, prefix + " <dark_gray>   » <gray>CPU: <white>" + information.getCpu() + "<dark_gray>%"
+        );
+        sendMessage(
+            player, prefix + " <dark_gray>   » <gray>Memory: <white>" + information.getMemoryUsage() +
+                "<gray>MB"
         );
     }
 
