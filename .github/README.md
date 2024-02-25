@@ -18,8 +18,8 @@ kubectl apply -f https://raw.githubusercontent.com/nextCluster/nextCluster/maste
 ```
 
 # Planned in the future
-- [ ] Add support for other operating systems
-- [ ] Dasboard
+- [ ] (install-script) Add support for other operating systems
+- [ ] Dashboard
 - [ ] Proxy-Module
 
 # Contributing
