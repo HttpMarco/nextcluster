@@ -88,5 +88,6 @@ else
   message "Worker-Join-Command: $JOIN_COMMAND"
 fi
 
+message "Initializing nextCluster (namespace: nextCluster)..."
 kubectl apply -f https://raw.githubusercontent.com/nextCluster/nextCluster/master/scripts/init-cluster.yml
 message "nextCluster installation finished!"
