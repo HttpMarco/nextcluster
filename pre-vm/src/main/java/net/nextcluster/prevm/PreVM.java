@@ -87,8 +87,9 @@ public class PreVM extends NextCluster {
             preVM.downloadPlatform(platform);
         }
 
-        // TODO: Fix (paper) classloader broke
-        //instrumentation.appendToSystemClassLoaderSearch(new JarFile(platform.toFile()));
+        if(!env.equalsIgnoreCase("PAPER")) {
+            instrumentation.appendToSystemClassLoaderSearch(new JarFile(platform.toFile()));
+        }
 
         preVM.startPlatform(platform.toFile());
     }
