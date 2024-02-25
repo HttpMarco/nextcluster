@@ -1,4 +1,4 @@
-package net.nextcluster.plugin.proxy.bungeecord.comand;
+package net.nextcluster.plugin.proxy.bungeecord.command;
 
 import net.kyori.adventure.platform.bungeecord.BungeeAudiences;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -41,24 +41,24 @@ public final class BungeeCordClusterCommand extends Command implements ClusterCo
                 NextCluster.instance().serviceProvider().service(service).ifPresentOrElse(clusterService -> {
                     clusterService.shutdown();
                     sendMessage(player,
-                            messages.value().getServiceStopped().replace("%service%", service)
+                        messages.value().getServiceStopped().replace("%service%", service)
                     );
                 }, () -> sendMessage(
-                        player,
-                        messages.value().getServiceNotFound().replace("%service%", service)
+                    player,
+                    messages.value().getServiceNotFound().replace("%service%", service)
                 ));
             } else if (args[2].equalsIgnoreCase("execute")) {
                 final var command = String.join(" ", Arrays.stream(args).toList().subList(2, args.length));
                 NextCluster.instance().serviceProvider().service(service).ifPresentOrElse(clusterService -> {
                     clusterService.execute(command);
                     sendMessage(player,
-                            messages.value().getCommandExecutedOnService()
-                                    .replace("%service%", clusterService.name())
-                                    .replace("%command%", command)
+                        messages.value().getCommandExecutedOnService()
+                            .replace("%service%", clusterService.name())
+                            .replace("%command%", command)
                     );
                 }, () -> sendMessage(
-                        player,
-                        messages.value().getServiceNotFound().replace("%service%", service)
+                    player,
+                    messages.value().getServiceNotFound().replace("%service%", service)
                 ));
             }
         }
@@ -67,7 +67,7 @@ public final class BungeeCordClusterCommand extends Command implements ClusterCo
 
             NextCluster.instance().serviceProvider().servicesAsync().thenAccept(it -> {
                 sendMessage(player,
-                        messages.value().getPrefix() + " <white>Services: <gray>" + it.size()
+                    messages.value().getPrefix() + " <white>Services: <gray>" + it.size()
                 );
                 for (ClusterService service : it) {
                     printServiceInformation(player, service, messages.value());
@@ -83,48 +83,48 @@ public final class BungeeCordClusterCommand extends Command implements ClusterCo
                 NextCluster.instance().groupProvider().group(group).ifPresentOrElse(it -> {
                     it.asBuilder().withMaintenance(state).publish();
                     sendMessage(
-                            player,
-                            messages.value().getGroupUpdated().replace("%group%", group)
+                        player,
+                        messages.value().getGroupUpdated().replace("%group%", group)
                     );
                 }, () -> sendMessage(
-                        player,
-                        messages.value().getGroupNotFound().replace("%group%", group)
+                    player,
+                    messages.value().getGroupNotFound().replace("%group%", group)
                 ));
             } else if (args[2].equalsIgnoreCase("fallback")) {
                 var state = Boolean.parseBoolean(args[3]);
                 NextCluster.instance().groupProvider().group(group).ifPresentOrElse(it -> {
                     it.asBuilder().withFallback(state).publish();
                     sendMessage(
-                            player,
-                            messages.value().getGroupUpdated().replace("%group%", group)
+                        player,
+                        messages.value().getGroupUpdated().replace("%group%", group)
                     );
                 }, () -> sendMessage(
-                        player,
-                        messages.value().getGroupNotFound().replace("%group%", group)
+                    player,
+                    messages.value().getGroupNotFound().replace("%group%", group)
                 ));
             } else if (args[2].equalsIgnoreCase("minServers")) {
                 var state = Integer.parseInt(args[3]);
                 NextCluster.instance().groupProvider().group(group).ifPresentOrElse(it -> {
                     it.asBuilder().withMinOnline(state).publish();
                     sendMessage(
-                            player,
-                            messages.value().getGroupUpdated().replace("%group%", group)
+                        player,
+                        messages.value().getGroupUpdated().replace("%group%", group)
                     );
                 }, () -> sendMessage(
-                        player,
-                        messages.value().getGroupNotFound().replace("%group%", group)
+                    player,
+                    messages.value().getGroupNotFound().replace("%group%", group)
                 ));
             } else if (args[2].equalsIgnoreCase("maxServers")) {
                 var state = Integer.parseInt(args[3]);
                 NextCluster.instance().groupProvider().group(group).ifPresentOrElse(it -> {
                     it.asBuilder().withMaxOnline(state).publish();
                     sendMessage(
-                            player,
-                            messages.value().getGroupUpdated().replace("%group%", group)
+                        player,
+                        messages.value().getGroupUpdated().replace("%group%", group)
                     );
                 }, () -> sendMessage(
-                        player,
-                        messages.value().getGroupNotFound().replace("%group%", group)
+                    player,
+                    messages.value().getGroupNotFound().replace("%group%", group)
                 ));
             }
         }
@@ -150,14 +150,21 @@ public final class BungeeCordClusterCommand extends Command implements ClusterCo
             return;
         }
         sendMessage(
-                player, prefix + " <dark_gray>   » <gray>Players: <white>" +
-                        information.getOnlinePlayers() + "<dark_gray>/<white>" + information.getMaxPlayers()
+            player, prefix + " <dark_gray>   » <gray>Players: <white>" +
+                information.getOnlinePlayers() + "<dark_gray>/<white>" + information.getMaxPlayers()
         );
         sendMessage(
-                player, prefix + " <dark_gray>   » <gray>MOTD: <white>" + information.getMotd()
+            player, prefix + " <dark_gray>   » <gray>MOTD: <white>" + information.getMotd()
         );
         sendMessage(
-                player, prefix + " <dark_gray>   » <gray>Platform: <white>" + information.getPlatform().name()
+            player, prefix + " <dark_gray>   » <gray>Platform: <white>" + information.getPlatform().name()
+        );
+        sendMessage(
+            player, prefix + " <dark_gray>   » <gray>CPU: <white>" + information.getCpu() + "<dark_gray>%"
+        );
+        sendMessage(
+            player, prefix + " <dark_gray>   » <gray>Memory: <white>" + information.getMemoryUsage() +
+                "<gray>MB"
         );
     }
 }

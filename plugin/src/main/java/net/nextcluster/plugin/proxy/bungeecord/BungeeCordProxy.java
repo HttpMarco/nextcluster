@@ -7,7 +7,7 @@ import net.md_5.bungee.api.plugin.Plugin;
 import net.nextcluster.driver.resource.service.ServiceInformation;
 import net.nextcluster.plugin.proxy.InternalClusterServer;
 import net.nextcluster.plugin.proxy.NextClusterProxy;
-import net.nextcluster.plugin.proxy.bungeecord.comand.BungeeCordClusterCommand;
+import net.nextcluster.plugin.proxy.bungeecord.command.BungeeCordClusterCommand;
 
 import java.net.InetSocketAddress;
 import java.util.Optional;
