@@ -29,5 +29,5 @@ For major changes, please open an issue first to discuss what you would like to 
 
 ****
 <p align="center">
-    Readme work in progress..
+    Readme work in progress...
 </p>
