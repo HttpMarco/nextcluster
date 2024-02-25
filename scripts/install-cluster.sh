@@ -88,5 +88,5 @@ else
   message "Worker-Join-Command: $JOIN_COMMAND"
 fi
 
-
+kubectl apply -f https://raw.githubusercontent.com/nextCluster/nextCluster/master/scripts/init-cluster.yml
 message "nextCluster installation finished!"
