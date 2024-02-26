@@ -39,3 +39,5 @@ include("assembler")
 include("modules")
 include("modules:proxy")
 findProject(":modules:proxy")?.name = "proxy"
+include("modules:signs")
+findProject(":modules:signs")?.name = "signs"
