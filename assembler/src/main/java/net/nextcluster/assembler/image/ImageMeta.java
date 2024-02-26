@@ -34,8 +34,16 @@ public class ImageMeta {
 
     private final String name;
     private final String tag;
-    private final String url = "10.99.214.62:5000";
+    private final String url;
     private final Authorization authorization;
+
+
+    public ImageMeta(String name, String tag, Authorization authorization) {
+        this.name = name;
+        this.tag = tag;
+        this.url = "10.99.214.62:5000";
+        this.authorization = authorization;
+    }
 
     @Getter
     @AllArgsConstructor
@@ -43,5 +51,4 @@ public class ImageMeta {
         private final String username;
         private final String password;
     }
-
 }
