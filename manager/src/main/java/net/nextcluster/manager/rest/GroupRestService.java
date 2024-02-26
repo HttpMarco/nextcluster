@@ -3,18 +3,16 @@ package net.nextcluster.manager.rest;
 import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.resource.Platform;
 import net.nextcluster.driver.resource.group.ClusterGroup;
-import net.nextcluster.driver.resource.group.NextGroup;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
-public class GroupRestService {
+@RestController("/group")
+public final class GroupRestService {
 
-    @GetMapping("/group/list")
+    @GetMapping("/list")
     public List<ClusterGroup> findGroup() {
         return new ArrayList<>();
     }
