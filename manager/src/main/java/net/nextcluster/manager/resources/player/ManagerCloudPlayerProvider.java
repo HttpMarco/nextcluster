@@ -7,10 +7,7 @@ import net.nextcluster.driver.resource.player.PlayerProvider;
 import net.nextcluster.driver.resource.player.packets.ClusterPlayerConnectPacket;
 import net.nextcluster.driver.resource.player.packets.ClusterPlayerDisconnectPacket;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public final class ManagerCloudPlayerProvider implements PlayerProvider {
 
@@ -22,14 +19,21 @@ public final class ManagerCloudPlayerProvider implements PlayerProvider {
     }
 
     @Override
-    public ThreadAsyncExecutor<Optional<ClusterPlayer>> getPlayerAsync(UUID uniqueId) {
+    public ThreadAsyncExecutor<List<ClusterPlayer>> playersAsync() {
+        var executor = new ThreadAsyncExecutor<List<ClusterPlayer>>();
+        executor.complete(players.values().stream().toList());
+        return executor;
+    }
+
+    @Override
+    public ThreadAsyncExecutor<Optional<ClusterPlayer>> playerAsync(UUID uniqueId) {
         var executor = new ThreadAsyncExecutor<Optional<ClusterPlayer>>();
         executor.complete(Optional.ofNullable(players.get(uniqueId)));
         return executor;
     }
 
     @Override
-    public ThreadAsyncExecutor<Optional<ClusterPlayer>> getPlayerAsync(String name) {
+    public ThreadAsyncExecutor<Optional<ClusterPlayer>> playerAsync(String name) {
         var executor = new ThreadAsyncExecutor<Optional<ClusterPlayer>>();
         executor.complete(players.values().stream().filter(player -> player.name().equals(name)).findFirst());
         return executor;

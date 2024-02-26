@@ -8,13 +8,20 @@ import net.nextcluster.driver.resource.player.PlayerProvider;
 import net.nextcluster.driver.resource.player.packets.AbstractClusterPlayerPacket;
 import net.nextcluster.driver.resource.player.packets.ClusterPlayerResponsePacket;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public final class ClientClusterPlayerProvider implements PlayerProvider {
 
     @Override
-    public ThreadAsyncExecutor<Optional<ClusterPlayer>> getPlayerAsync(UUID uniqueId) {
+    public ThreadAsyncExecutor<List<ClusterPlayer>> playersAsync() {
+        // todo: implement
+        return null;
+    }
+
+    @Override
+    public ThreadAsyncExecutor<Optional<ClusterPlayer>> playerAsync(UUID uniqueId) {
         var executor = new ThreadAsyncExecutor<Optional<ClusterPlayer>>();
         NextCluster.instance().transmitter().request("nextcluster-users-online", new JsonDocument().append("uuid", uniqueId),
                 AbstractClusterPlayerPacket.class, it -> executor.complete(Optional.of(it.clusterPlayer())));
@@ -22,7 +29,7 @@ public final class ClientClusterPlayerProvider implements PlayerProvider {
     }
 
     @Override
-    public ThreadAsyncExecutor<Optional<ClusterPlayer>> getPlayerAsync(String username) {
+    public ThreadAsyncExecutor<Optional<ClusterPlayer>> playerAsync(String username) {
         var executor = new ThreadAsyncExecutor<Optional<ClusterPlayer>>();
         NextCluster.instance().transmitter().request("nextcluster-users-online", new JsonDocument().append("username", username),
                 AbstractClusterPlayerPacket.class, it -> executor.complete(Optional.of(it.clusterPlayer())));
