@@ -264,6 +264,10 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
             this.spec.setMaintenance(value);
             return this;
         }
+        public Builder withPlatform(Platform platform) {
+            group.environment().put("PLATFORM", platform.name());
+            return this;
+        }
 
         public Builder withStatic(boolean value) {
             this.spec.setStatic(value);
@@ -290,7 +294,5 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
                 .forceConflicts()
                 .serverSideApply();
         }
-
     }
-
 }
