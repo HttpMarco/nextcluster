@@ -1,7 +1,7 @@
 #!/bin/bash
 
-DOCKER_CRI_VERSION="v0.3.9/"
-DOCKER_CRI_FILE="cri-dockerd_0.3.9.3-0.debian-bullseye_amd64.deb"
+DOCKER_CRI_VERSION="v0.3.10/"
+DOCKER_CRI_FILE="cri-dockerd_0.3.10.3-0.debian-bullseye_amd64.deb"
 
 message() {
   local TEXT=$1
