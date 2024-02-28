@@ -21,6 +21,7 @@ message() {
 message 'Updating system...'
 
 apt install sudo
+sudo dpkg --configure -a
 sudo apt-get update
 sudo apt-get upgrade -y
 sudo apt-get install wget -y
