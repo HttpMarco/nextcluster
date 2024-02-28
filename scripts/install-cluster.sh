@@ -3,7 +3,7 @@
 source /etc/os-release
 
 DOCKER_CRI_VERSION="v0.3.10/"
-if [[ $ID == "debian"]]; then
+if [[ $ID == "debian" ]]; then
 	DOCKER_CRI_FILE="cri-dockerd_0.3.10.3-0.debian-bullseye_amd64.deb"
 elif [[ $ID == "ubuntu" ]]; then
 	DOCKER_CRI_FILE="cri-dockerd_0.3.10.3-0.ubuntu-bionic_amd64.deb"
@@ -34,7 +34,7 @@ else
 	sudo apt-get update
 	sudo apt-get install ca-certificates curl
 	sudo install -m 0755 -d /etc/apt/keyrings
- 	if [[ $ID == "debian"]]; then
+ 	if [[ $ID == "debian" ]]; then
 		sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
   	elif [[ $ID == "ubuntu" ]]; then
 		sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
