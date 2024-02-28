@@ -4,7 +4,7 @@
 
 # Installation
 
-### Debian 12
+### Debian 12/11
 For <b><u> Debian 12</u></b> users, you can install the package from the repository by running the following command:
 ```bash
 wget https://raw.githubusercontent.com/nextCluster/nextCluster/master/scripts/install-cluster.sh && chmod +x install-cluster.sh && ./install-cluster.sh && rm install-cluster.sh
