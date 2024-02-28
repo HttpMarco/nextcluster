@@ -6,7 +6,7 @@ DOCKER_CRI_VERSION="v0.3.10/"
 if [[ $ID == "debian" ]]; then
 	DOCKER_CRI_FILE="cri-dockerd_0.3.10.3-0.debian-bullseye_amd64.deb"
 elif [[ $ID == "ubuntu" ]]; then
-	DOCKER_CRI_FILE="cri-dockerd_0.3.10.3-0.ubuntu-bionic_amd64.deb"
+	DOCKER_CRI_FILE="cri-dockerd_0.3.10.3-0.ubuntu-jammy_amd64.deb"
 fi
 
 message() {
