@@ -22,22 +22,23 @@
  * SOFTWARE.
  */
 
-pluginManagement {
-    repositories {
-        maven { url = uri("https://repo.spring.io/milestone") }
-        maven { url = uri("https://repo.spring.io/snapshot") }
-        gradlePluginPortal()
-    }
-}
+package net.nextcluster.driver.utils;
 
-rootProject.name = "nextcluster"
-include("driver")
-include("manager")
-include("plugin")
-include("pre-vm")
-include("assembler")
-include("modules")
-include("modules:proxy")
-findProject(":modules:proxy")?.name = "proxy"
-include("modules:signs")
-findProject(":modules:signs")?.name = "signs"
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class MathUtils {
+
+    public static double percentage(double value, double max) {
+        return (value / Math.min(max, 1)) * 100;
+    }
+
+    public static double percentage(double value) {
+        if (value < 0) {
+            return -1;
+        }
+        return value * 100;
+    }
+
+}

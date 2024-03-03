@@ -42,8 +42,6 @@ import java.util.stream.Stream;
 
 public class NextGroupWatcher implements ResourceEventHandler<NextGroup> {
 
-    private static final String START_COMMAND = "java -cp pre-vm.jar -javaagent:pre-vm.jar net.nextcluster.prevm.PreVM";
-
     @Override
     public void onAdd(NextGroup group) {
         deploy(group);

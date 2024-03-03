@@ -89,7 +89,9 @@ public class PreVM extends NextCluster {
             }
         }
 
-        instrumentation.appendToSystemClassLoaderSearch(new JarFile(platform.toFile()));
+        if(!env.equalsIgnoreCase("PAPER")) {
+            instrumentation.appendToSystemClassLoaderSearch(new JarFile(platform.toFile()));
+        }
         preVM.startPlatform(platform.toFile());
     }
 
@@ -109,23 +111,13 @@ public class PreVM extends NextCluster {
                     throw new RuntimeException(e);
                 }
             }
-            final var thread = Thread.ofPlatform().name("platform-thread").unstarted(() -> {
-                try {
-                    LOGGER.info("Invoke Main-Class ({})", mainClass);
-
-                    final var main = classLoader.loadClass(mainClass).getMethod("main", String[].class);
-
-                    if (platform instanceof PlatformArgs platformArgs) {
-                        main.invoke(null, (Object) platformArgs.args());
-                    } else {
-                        main.invoke(null, (Object) new String[0]);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace(System.err);
-                }
-            });
-            thread.setContextClassLoader(classLoader);
-            thread.start();
+            try {
+                LOGGER.info("Invoke Main-Class ({})", mainClass);
+                final var main = Class.forName(mainClass, true, classLoader).getMethod("main", String[].class);
+                main.invoke(null, (Object) platform.args());
+            } catch (Exception e) {
+                e.printStackTrace(System.err);
+            }
         }
     }
 }

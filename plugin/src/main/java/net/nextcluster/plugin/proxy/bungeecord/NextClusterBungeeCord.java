@@ -37,7 +37,7 @@ import net.md_5.bungee.event.EventHandler;
 @SuppressWarnings("unused")
 public final class NextClusterBungeeCord extends Plugin implements Listener {
 
-    private final BungeeCordProxy proxy = new BungeeCordProxy();
+    private BungeeCordProxy proxy;
 
     @Override
     public void onEnable() {
@@ -48,8 +48,9 @@ public final class NextClusterBungeeCord extends Plugin implements Listener {
             listener.getServerPriority().clear();
         }
 
+        this.proxy = new BungeeCordProxy(this);
         ProxyServer.getInstance().getPluginManager().registerListener(this, this);
-        proxy.watch();
+        this.proxy.watch();
     }
 
 

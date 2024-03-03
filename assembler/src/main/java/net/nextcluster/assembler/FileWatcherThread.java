@@ -24,7 +24,7 @@
 
 package net.nextcluster.assembler;
 
-import dev.httpmarco.osgon.configuration.gson.JsonUtils;
+import dev.httpmarco.osgon.files.configuration.gson.JsonUtils;
 import lombok.SneakyThrows;
 import net.nextcluster.assembler.image.ImageMeta;
 import net.nextcluster.assembler.tasks.CommandLineTask;

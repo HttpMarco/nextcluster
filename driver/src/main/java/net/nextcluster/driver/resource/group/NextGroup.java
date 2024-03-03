@@ -30,6 +30,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.base.Preconditions;
 import io.fabric8.generator.annotation.Default;
 import io.fabric8.kubernetes.api.model.*;
+import io.fabric8.kubernetes.client.utils.Serialization;
 import io.fabric8.kubernetes.model.annotation.Group;
 import io.fabric8.kubernetes.model.annotation.Kind;
 import io.fabric8.kubernetes.model.annotation.Version;
@@ -265,6 +266,10 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
             this.spec.setMaintenance(value);
             return this;
         }
+        public Builder withPlatform(Platform platform) {
+            group.environment().put("PLATFORM", platform.name());
+            return this;
+        }
 
         public Builder withStatic(boolean value) {
             this.spec.setStatic(value);
@@ -280,14 +285,16 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
             Preconditions.checkNotNull(this.spec.base.image, "Image is required");
 
             group.setSpec(spec);
+            group.getMetadata().setManagedFields(null);
+
+            NextCluster.LOGGER.info(Serialization.asYaml(group));
 
             NextCluster.instance()
-                    .kubernetes()
-                    .resources(NextGroup.class)
-                    .resource(group)
-                    .serverSideApply();
+                .kubernetes()
+                .resources(NextGroup.class)
+                .resource(group)
+                .forceConflicts()
+                .serverSideApply();
         }
-
     }
-
 }

@@ -41,6 +41,7 @@ dependencies {
         exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
     }
     implementation("org.springframework.boot:spring-boot-starter-security")
+    annotationProcessor(libs.crd)
 
     testImplementation(project(":driver"))
     testImplementation("org.springframework.boot:spring-boot-starter-test")

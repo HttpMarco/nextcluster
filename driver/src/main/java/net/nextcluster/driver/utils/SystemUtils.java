@@ -22,22 +22,30 @@
  * SOFTWARE.
  */
 
-pluginManagement {
-    repositories {
-        maven { url = uri("https://repo.spring.io/milestone") }
-        maven { url = uri("https://repo.spring.io/snapshot") }
-        gradlePluginPortal()
-    }
-}
+package net.nextcluster.driver.utils;
 
-rootProject.name = "nextcluster"
-include("driver")
-include("manager")
-include("plugin")
-include("pre-vm")
-include("assembler")
-include("modules")
-include("modules:proxy")
-findProject(":modules:proxy")?.name = "proxy"
-include("modules:signs")
-findProject(":modules:signs")?.name = "signs"
+import com.sun.management.OperatingSystemMXBean;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
+import java.lang.management.ManagementFactory;
+import java.text.DecimalFormat;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class SystemUtils {
+
+    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.00");
+
+    public static double cpuUsage() {
+        final var factory = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+        return Double.parseDouble(DECIMAL_FORMAT.format(MathUtils.percentage(factory.getCpuLoad())));
+    }
+
+    public static long memoryUsage() {
+        final var runtime = Runtime.getRuntime();
+        final var maxMemory = runtime.maxMemory() / (1024 * 1024);
+        final var freeMemory = runtime.freeMemory() / (1024 * 1024);
+        return maxMemory - freeMemory;
+    }
+
+}

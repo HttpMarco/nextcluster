@@ -4,7 +4,7 @@ DOCKER_CRI_VERSION="v0.3.9/"
 DOCKER_CRI_FILE="cri-dockerd_0.3.9.3-0.debian-bullseye_amd64.deb"
 
 message() {
-    local TEXT=$1
+  local TEXT=$1
 	local COLOR='\033[38;5;220m'
     local RESET='\033[0m'
 
@@ -21,7 +21,7 @@ sudo apt-get install wget -y
 if command -v docker &> /dev/null; then
 	message 'Docker found, skipping installation!'
 else
-    # Install docker
+  # Install docker
 	message 'Docker not found, installing...'
 
 	sudo apt-get update
@@ -59,25 +59,35 @@ sudo apt-get update && sudo apt-get install -y apt-transport-https -y
 curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
 echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list > /dev/null
 
-# Install Kubernets tools
-sudo apt-get update
-sudo apt-get install -y kubectl kubelet kubeadm
+KUBELET_CONF="/etc/kubernetes/kubelet.conf"
+if [ -e "$KUBELET_CONF" ]; then
+  message 'Kubernetes found, skipping installation!'
+else
+  message 'Kubernetes not found, installing...'
 
-# Initialize Kubernetes cluster
-sudo kubeadm init --pod-network-cidr=192.168.0.0/16 --cri-socket=unix:///var/run/cri-dockerd.sock
+  # Install Kubernets tools
+  sudo apt-get update
+  sudo apt-get install -y kubectl kubelet kubeadm
 
-# Copy kubeconfig for kubectl
-mkdir -p $HOME/.kube
-sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-# shellcheck disable=SC2046
-sudo chown $(id -u):$(id -g) $HOME/.kube/config
+  # Initialize Kubernetes cluster
+  sudo kubeadm init --pod-network-cidr=192.168.0.0/16 --cri-socket=unix:///var/run/cri-dockerd.sock
 
-# Add Calico as pod-network plugin
-kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+  # Copy kubeconfig for kubectl
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  # shellcheck disable=SC2046
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
-JOIN_COMMAND=$(kubeadm token create --print-join-command)
+  # Add Calico as pod-network plugin
+  kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
 
-# Remove taint on all nods to start pods on these
-kubectl taint nodes --all node-role.kubernetes.io/control-plane-
+  JOIN_COMMAND=$(kubeadm token create --print-join-command)
 
-message "Worker-Join-Command: $JOIN_COMMAND"
+  # Remove taint on all nods to start pods on these
+  kubectl taint nodes --all node-role.kubernetes.io/control-plane-
+  message "Worker-Join-Command: $JOIN_COMMAND"
+fi
+
+message "Initializing nextCluster (namespace: nextCluster)..."
+kubectl apply -f https://raw.githubusercontent.com/nextCluster/nextCluster/master/scripts/init-cluster.yml
+message "nextCluster installation finished!"

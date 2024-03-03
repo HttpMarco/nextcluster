@@ -40,17 +40,16 @@ public final class IngameMessages {
         <gold>/cluster <service> stop <gray>Stops a running service
         <gold>/cluster <service> execute [command]<gray>Executes a command in the service
         """.replace("%prefix%", prefix);
-    private String serviceStarted = """
-        %prefix% <gray>Service <gold>%service% <gray>has been <green>started
-        """.replace("%prefix%", prefix);
-    private String serviceStopped = """
-        %prefix% <gray>Service <gold>%service% <gray>has been <red>stopped
-        """.replace("%prefix%", prefix);
-    private String serviceNotFound = """
-        %prefix% <gray>Service <gold>%service% <gray>not found
-        """.replace("%prefix%", prefix);
-    private String commandExecutedOnService = """
-        %prefix% <gray>Command <yellow>%command% <gray>executed on service %service%<gold>
-        """.replace("%prefix%", prefix);
+    private String invalidArgument = "%prefix% <red>%argument% <gray>is invalid".replace("%prefix%", prefix);
+
+    // Services
+    private String serviceStarted = "%prefix% <gray>Service <white>%service% <gray>has been <green>started".replace("%prefix%", prefix);
+    private String serviceStopped = "%prefix% <gray>Service <white>%service% <gray>has been <red>stopped".replace("%prefix%", prefix);
+    private String serviceNotFound = "%prefix% <red>Service %service% not found".replace("%prefix%", prefix);
+
+    // Groups
+    private String commandExecutedOnService = "%prefix% <gray>Command <white>%command% <gray>executed on service <white>%service%".replace("%prefix%", prefix);
+    private String groupUpdated = "%prefix% <gray>Group <white>%group% <gray>has been <green>updated".replace("%prefix%", prefix);
+    private String groupNotFound = "%prefix% <red>Group %group% not found".replace("%prefix%", prefix);
 
 }

@@ -25,6 +25,8 @@
 package net.nextcluster.plugin.proxy.velocity.command;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.BoolArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.CommandSource;
@@ -33,11 +35,13 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.resource.config.NextConfig;
+import net.nextcluster.driver.resource.group.ClusterGroup;
 import net.nextcluster.driver.resource.service.ClusterService;
+import net.nextcluster.plugin.ClusterCommand;
 import net.nextcluster.plugin.NextClusterPlugin;
 import net.nextcluster.plugin.misc.IngameMessages;
 
-public final class VelocityClusterCommand {
+public final class VelocityClusterCommand implements ClusterCommand {
 
     private static final Command<CommandSource> SEND_HELP = context -> {
         final var player = (Player) context.getSource();
@@ -47,13 +51,23 @@ public final class VelocityClusterCommand {
 
     public static BrigadierCommand create(String name, NextConfig<IngameMessages> messages) {
         final var node = BrigadierCommand.literalArgumentBuilder(name)
+            //.requires(source -> source.hasPermission(PERMISSION))
             .executes(SEND_HELP)
             .then(
                 BrigadierCommand.literalArgumentBuilder("service")
                     .executes(SEND_HELP)
                     .then(
                         BrigadierCommand.requiredArgumentBuilder("service", StringArgumentType.word())
-                            .executes(SEND_HELP)
+                            .executes(context -> {
+                                final var service = context.getArgument("service", String.class);
+                                NextCluster.instance().serviceProvider().service(service).ifPresentOrElse(clusterService -> {
+                                    printServiceInformation(context.getSource(), clusterService, messages.value());
+                                }, () -> sendMessage(
+                                    context.getSource(),
+                                    messages.value().getServiceNotFound().replace("%service%", service)
+                                ));
+                                return Command.SINGLE_SUCCESS;
+                            })
                             .suggests((context, builder) -> {
                                 for (ClusterService service : NextCluster.instance().serviceProvider().services()) {
                                     builder.suggest(service.name());
@@ -107,6 +121,145 @@ public final class VelocityClusterCommand {
                             .build()
                     )
             )
+            .then(
+                BrigadierCommand.literalArgumentBuilder("services")
+                    .executes(context -> {
+                        NextCluster.instance().serviceProvider().servicesAsync().thenAccept(services -> {
+                            sendMessage(
+                                context.getSource(),
+                                messages.value().getPrefix() + " <white>Services: <gray>" + services.size()
+                            );
+                            for (ClusterService service : services) {
+                                printServiceInformation(context.getSource(), service, messages.value());
+                            }
+                        });
+                        return Command.SINGLE_SUCCESS;
+                    })
+                    .build()
+            )
+            .then(
+                BrigadierCommand.literalArgumentBuilder("group")
+                    .executes(SEND_HELP)
+                    .then(
+                        BrigadierCommand.requiredArgumentBuilder("group", StringArgumentType.word())
+                            .suggests((context, builder) -> {
+                                for (ClusterGroup group : NextCluster.instance().groupProvider().groups()) {
+                                    builder.suggest(group.name());
+                                }
+                                return builder.buildFuture();
+                            })
+                            .then(
+                                BrigadierCommand.literalArgumentBuilder("maintenance")
+                                    .executes(SEND_HELP)
+                                    .then(
+                                        BrigadierCommand.requiredArgumentBuilder("state", BoolArgumentType.bool())
+                                            .suggests((context, builder) -> {
+                                                builder.suggest("true");
+                                                builder.suggest("false");
+                                                return builder.buildFuture();
+                                            })
+                                            .executes(context -> {
+                                                final var state = context.getArgument("state", Boolean.class);
+                                                final var group = context.getArgument("group", String.class);
+
+                                                NextCluster.instance().groupProvider().group(group).ifPresentOrElse(clusterGroup -> {
+                                                    clusterGroup.asBuilder().withMaintenance(state).publish();
+                                                    sendMessage(
+                                                        context.getSource(),
+                                                        messages.value().getGroupUpdated().replace("%group%", group)
+                                                    );
+                                                }, () -> sendMessage(
+                                                    context.getSource(),
+                                                    messages.value().getGroupNotFound().replace("%group%", group)
+                                                ));
+                                                return Command.SINGLE_SUCCESS;
+                                            })
+                                            .build()
+                                    )
+                                    .build()
+                            )
+                            .then(
+                                BrigadierCommand.literalArgumentBuilder("fallback")
+                                    .executes(SEND_HELP)
+                                    .then(
+                                        BrigadierCommand.requiredArgumentBuilder("state", BoolArgumentType.bool())
+                                            .suggests((context, builder) -> {
+                                                builder.suggest("true");
+                                                builder.suggest("false");
+                                                return builder.buildFuture();
+                                            })
+                                            .executes(context -> {
+                                                final var state = context.getArgument("state", Boolean.class);
+                                                final var group = context.getArgument("group", String.class);
+
+                                                NextCluster.instance().groupProvider().group(group).ifPresentOrElse(clusterGroup -> {
+                                                    clusterGroup.asBuilder().withFallback(state).publish();
+                                                    sendMessage(
+                                                        context.getSource(),
+                                                        messages.value().getGroupUpdated().replace("%group%", group)
+                                                    );
+                                                }, () -> sendMessage(
+                                                    context.getSource(),
+                                                    messages.value().getGroupNotFound().replace("%group%", group)
+                                                ));
+                                                return Command.SINGLE_SUCCESS;
+                                            })
+                                            .build()
+                                    )
+                                    .build()
+                            )
+                            .then(
+                                BrigadierCommand.literalArgumentBuilder("minServers")
+                                    .executes(SEND_HELP)
+                                    .then(
+                                        BrigadierCommand.requiredArgumentBuilder("amount", IntegerArgumentType.integer())
+                                            .executes(context -> {
+                                                final var amount = context.getArgument("amount", Integer.class);
+                                                final var group = context.getArgument("group", String.class);
+                                                NextCluster.instance().groupProvider().group(group).ifPresentOrElse(clusterGroup -> {
+                                                    clusterGroup.asBuilder().withMinOnline(amount).publish();
+                                                    sendMessage(
+                                                        context.getSource(),
+                                                        messages.value().getGroupUpdated().replace("%group%", group)
+                                                    );
+                                                }, () -> sendMessage(
+                                                    context.getSource(),
+                                                    messages.value().getGroupNotFound().replace("%group%", group)
+                                                ));
+                                                return Command.SINGLE_SUCCESS;
+                                            })
+                                            .build()
+                                    )
+                                    .build()
+                            )
+                            .then(
+                                BrigadierCommand.literalArgumentBuilder("maxServers")
+                                    .executes(SEND_HELP)
+                                    .then(
+                                        BrigadierCommand.requiredArgumentBuilder("amount", IntegerArgumentType.integer())
+                                            .executes(context -> {
+                                                final var amount = context.getArgument("amount", Integer.class);
+                                                final var group = context.getArgument("group", String.class);
+                                                NextCluster.instance().groupProvider().group(group).ifPresentOrElse(clusterGroup -> {
+                                                    clusterGroup.asBuilder().withMaxOnline(amount).publish();
+                                                    sendMessage(
+                                                        context.getSource(),
+                                                        messages.value().getGroupUpdated().replace("%group%", group)
+                                                    );
+                                                }, () -> sendMessage(
+                                                    context.getSource(),
+                                                    messages.value().getGroupNotFound().replace("%group%", group)
+                                                ));
+                                                return Command.SINGLE_SUCCESS;
+                                            })
+                                            .build()
+                                    )
+                                    .build()
+                            )
+                            .build()
+                    )
+                    .build()
+            )
             .build();
 
         return new BrigadierCommand(node);
@@ -118,6 +271,34 @@ public final class VelocityClusterCommand {
             return;
         }
         player.sendMessage(MiniMessage.miniMessage().deserialize(message));
+    }
+
+    private static void printServiceInformation(CommandSource player, ClusterService service, IngameMessages messages) {
+        final var prefix = messages.getPrefix();
+
+        sendMessage(player, prefix + " <dark_gray>- <white>" + service.name());
+        final var information = service.information();
+        if (information == null) {
+            sendMessage(player, prefix + " <dark_gray>   » <red><i>No information available");
+            return;
+        }
+        sendMessage(
+            player, prefix + " <dark_gray>   » <gray>Players: <white>" +
+                information.getOnlinePlayers() + "<dark_gray>/<white>" + information.getMaxPlayers()
+        );
+        sendMessage(
+            player, prefix + " <dark_gray>   » <gray>MOTD: <white>" + information.getMotd()
+        );
+        sendMessage(
+            player, prefix + " <dark_gray>   » <gray>Platform: <white>" + information.getPlatform().name()
+        );
+        sendMessage(
+            player, prefix + " <dark_gray>   » <gray>CPU: <white>" + information.getCpu() + "<dark_gray>%"
+        );
+        sendMessage(
+            player, prefix + " <dark_gray>   » <gray>Memory: <white>" + information.getMemoryUsage() +
+                "<gray>MB"
+        );
     }
 
 }
