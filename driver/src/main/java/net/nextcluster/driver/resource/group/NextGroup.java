@@ -262,6 +262,11 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
             return this;
         }
 
+        public Builder withEnvironment(String key, Object value) {
+            this.group.environment().put(key, value.toString());
+            return this;
+        }
+
         public Builder withMaintenance(boolean value) {
             this.spec.setMaintenance(value);
             return this;

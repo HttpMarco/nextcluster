@@ -4,8 +4,8 @@
 
 # Installation
 
-### Debian 12
-For <b><u> Debian 12</u></b> users, you can install the package from the repository by running the following command:
+### Approved operating system: Debian 12/11/10 & Ubuntu 22.04
+For <b><u> approved operating system</u></b> users, you can install the package from the repository by running the following command:
 ```bash
 wget https://raw.githubusercontent.com/nextCluster/nextCluster/master/scripts/install-cluster.sh && chmod +x install-cluster.sh && ./install-cluster.sh && rm install-cluster.sh
 ```

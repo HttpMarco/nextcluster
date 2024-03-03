@@ -1,7 +1,13 @@
 #!/bin/bash
 
-DOCKER_CRI_VERSION="v0.3.9/"
-DOCKER_CRI_FILE="cri-dockerd_0.3.9.3-0.debian-bullseye_amd64.deb"
+source /etc/os-release
+
+DOCKER_CRI_VERSION="v0.3.10/"
+if [[ $ID == "debian" ]]; then
+	DOCKER_CRI_FILE="cri-dockerd_0.3.10.3-0.debian-bullseye_amd64.deb"
+elif [[ $ID == "ubuntu" ]]; then
+	DOCKER_CRI_FILE="cri-dockerd_0.3.10.3-0.ubuntu-jammy_amd64.deb"
+fi
 
 message() {
   local TEXT=$1
@@ -14,6 +20,8 @@ message() {
 # Update service
 message 'Updating system...'
 
+apt install sudo
+sudo dpkg --configure -a -E --no-pager -O -G --force
 sudo apt-get update
 sudo apt-get upgrade -y
 sudo apt-get install wget -y
@@ -27,13 +35,24 @@ else
 	sudo apt-get update
 	sudo apt-get install ca-certificates curl
 	sudo install -m 0755 -d /etc/apt/keyrings
-	sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+ 	if [[ $ID == "debian" ]]; then
+		sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+  	elif [[ $ID == "ubuntu" ]]; then
+		sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+   	fi
 	sudo chmod a+r /etc/apt/keyrings/docker.asc
 
-	echo \
-	  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
-	  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-	  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+	if [[ $ID == "debian" ]]; then
+		echo \
+		  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
+		  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+		  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+  	 elif [[ $ID == "ubuntu" ]]; then
+   		 echo \
+		  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+		  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+		  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    	fi
 	sudo apt-get update
 	sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 fi
