@@ -24,6 +24,10 @@ public class PlatformService {
         PLATFORMS.add(new BungeeCordPlatform());
     }
 
+    public static Platform platform(String id) {
+        return PLATFORMS.stream().filter(it -> it.id().equals(id)).findFirst().orElse(null);
+    }
+
     public static Platform detect() {
         var platformVersion = System.getenv("PLATFORM");
         return PLATFORMS.

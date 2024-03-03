@@ -1,6 +1,6 @@
 package net.nextcluster.driver.resource.platform;
 
-import dev.httpmarco.osgon.configuration.gson.JsonDocument;
+import dev.httpmarco.osgon.files.configuration.gson.JsonDocument;
 import net.nextcluster.driver.NextCluster;
 
 import java.io.BufferedReader;

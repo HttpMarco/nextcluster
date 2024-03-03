@@ -271,9 +271,9 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
             this.spec.setMaintenance(value);
             return this;
         }
+
         public Builder withPlatform(Platform platform) {
-            group.environment().put("PLATFORM", platform.name());
-            return this;
+            return withEnvironment("PLATFORM", platform.id());
         }
 
         public Builder withStatic(boolean value) {
@@ -295,11 +295,11 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
             NextCluster.LOGGER.info(Serialization.asYaml(group));
 
             NextCluster.instance()
-                .kubernetes()
-                .resources(NextGroup.class)
-                .resource(group)
-                .forceConflicts()
-                .serverSideApply();
+                    .kubernetes()
+                    .resources(NextGroup.class)
+                    .resource(group)
+                    .forceConflicts()
+                    .serverSideApply();
         }
     }
 }

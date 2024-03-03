@@ -1,8 +1,9 @@
 package net.nextcluster.manager.rest;
 
 import net.nextcluster.driver.NextCluster;
-import net.nextcluster.driver.resource.Platform;
 import net.nextcluster.driver.resource.group.ClusterGroup;
+import net.nextcluster.driver.resource.platform.Platform;
+import net.nextcluster.driver.resource.platform.PlatformService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,7 +41,7 @@ public final class GroupRestService {
                 .withMinOnline(minOnline)
                 .withFallback(fallback)
                 .withMaxMemory(maxMemory)
-                .withPlatform(Platform.valueOf(platform))
+                .withPlatform(PlatformService.platform(platform))
                 .publish();
 
         return ResponseEntity.ok().build();
