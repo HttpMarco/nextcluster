@@ -17,13 +17,14 @@ message() {
     echo -e "${COLOR}[nextCluster] ${TEXT}${RESET}"
 }
 
+
 # Update service
 message 'Updating system...'
 
-apt install sudo
-sudo apt-get update
-sudo apt-get upgrade -y
-sudo apt-get install wget -y
+DEBIAN_FRONTEND=noninteractive apt-get install sudo
+sudo DEBIAN_FRONTEND=noninteractive apt-get update
+sudo DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
+sudo DEBIAN_FRONTEND=noninteractive apt-get install wget -y
 
 if command -v docker &> /dev/null; then
 	message 'Docker found, skipping installation!'
@@ -31,8 +32,8 @@ else
   # Install docker
 	message 'Docker not found, installing...'
 
-	sudo apt-get update
-	sudo apt-get install ca-certificates curl
+	sudo DEBIAN_FRONTEND=noninteractive apt-get update
+	sudo DEBIAN_FRONTEND=noninteractive apt-get install ca-certificates curl
 	sudo install -m 0755 -d /etc/apt/keyrings
  	if [[ $ID == "debian" ]]; then
 		sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
@@ -52,8 +53,8 @@ else
 		  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
 		  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
     	fi
-	sudo apt-get update
-	sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+	sudo DEBIAN_FRONTEND=noninteractive apt-get update
+	sudo DEBIAN_FRONTEND=noninteractive apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 fi
 
 # Download docker-cri as container runtime
@@ -64,17 +65,17 @@ if [ -e "$CRI_SOCKET" ]; then
 else
   message "Docker-CRI  not found, installing... ($DOCKER_CRI_VERSION$DOCKER_CRI_FILE)"
 
-  sudo wget https://github.com/Mirantis/cri-dockerd/releases/download/$DOCKER_CRI_VERSION$DOCKER_CRI_FILE
+  sudo wget --quiet https://github.com/Mirantis/cri-dockerd/releases/download/$DOCKER_CRI_VERSION$DOCKER_CRI_FILE
   sudo dpkg -i $DOCKER_CRI_FILE
   sudo rm $DOCKER_CRI_FILE
 fi
 
 swapoff -a
-apt-get install gnupg gnupg1 gnupg2 -y
+DEBIAN_FRONTEND=noninteractive apt-get install gnupg gnupg1 gnupg2 -y
 
 # Add Kubernetes-Repository
-sudo apt-get update && sudo apt-get install -y apt-transport-https -y
-curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+sudo DEBIAN_FRONTEND=noninteractive apt-get update && sudo DEBIAN_FRONTEND=noninteractive DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https -y
+wget --quiet https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
 echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list > /dev/null
 
 KUBELET_CONF="/etc/kubernetes/kubelet.conf"
@@ -84,8 +85,8 @@ else
   message 'Kubernetes not found, installing...'
 
   # Install Kubernets tools
-  sudo apt-get update
-  sudo apt-get install -y kubectl kubelet kubeadm
+  sudo DEBIAN_FRONTEND=noninteractive apt-get update
+  sudo DEBIAN_FRONTEND=noninteractive apt-get install -y kubectl kubelet kubeadm
 
   # Initialize Kubernetes cluster
   sudo kubeadm init --pod-network-cidr=192.168.0.0/16 --cri-socket=unix:///var/run/cri-dockerd.sock
