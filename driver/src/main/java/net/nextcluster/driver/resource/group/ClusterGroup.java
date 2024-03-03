@@ -24,7 +24,7 @@
 
 package net.nextcluster.driver.resource.group;
 
-import net.nextcluster.driver.resource.Platform;
+import net.nextcluster.driver.resource.platform.Platform;
 
 import java.util.Map;
 
