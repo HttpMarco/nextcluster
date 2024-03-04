@@ -3,6 +3,7 @@ package net.nextcluster.driver.resource.platform;
 import net.nextcluster.driver.resource.platform.impl.BungeeCordPlatform;
 import net.nextcluster.driver.resource.platform.impl.CustomPlatform;
 import net.nextcluster.driver.resource.platform.impl.MinestomPlatform;
+import net.nextcluster.driver.resource.platform.impl.WaterdogPEPlatform;
 import net.nextcluster.driver.resource.platform.paper.PaperPlatform;
 import net.nextcluster.driver.resource.platform.paper.VelocityPlatform;
 import net.nextcluster.driver.resource.platform.paper.WaterfallPlatform;
@@ -22,6 +23,7 @@ public class PlatformService {
         PLATFORMS.add(new VelocityPlatform());
         PLATFORMS.add(new MinestomPlatform());
         PLATFORMS.add(new BungeeCordPlatform());
+        PLATFORMS.add(new WaterdogPEPlatform());
     }
 
     public static Platform platform(String id) {
