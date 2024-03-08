@@ -1,0 +1,4 @@
+name: NextCluster
+author: nextCluster
+version: 1.0.0-SNAPSHOT
+main: net.nextcluster.plugin.server.nukkit.NukkitClusterPlugin
