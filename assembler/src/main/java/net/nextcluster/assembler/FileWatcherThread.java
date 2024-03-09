@@ -28,6 +28,8 @@ import dev.httpmarco.osgon.files.configuration.gson.JsonUtils;
 import lombok.SneakyThrows;
 import net.nextcluster.assembler.image.ImageMeta;
 import net.nextcluster.assembler.tasks.CommandLineTask;
+import net.nextcluster.driver.NextCluster;
+import net.nextcluster.driver.resource.group.ClusterGroup;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,17 +49,17 @@ public class FileWatcherThread extends Thread {
         super("FileWatcherThread");
     }
 
-    @SuppressWarnings({"unchecked", "BusyWait", "InfiniteLoopStatement"})
+    @SuppressWarnings({"BusyWait"})
     @SneakyThrows
     @Override
     public void run() {
-        final Path images = Path.of("/images");
+        final var images = Path.of("/images");
 
         LOGGER.info("Watching: {}", images.toAbsolutePath());
 
-        while (true) {
+        while (currentThread().isAlive()) {
             Files.list(images).forEach(path -> {
-                long lastChange = lastChanged.computeIfAbsent(
+                var lastChange = lastChanged.computeIfAbsent(
                     path.toAbsolutePath().toString(),
                     s -> System.currentTimeMillis()
                 );
@@ -88,6 +90,11 @@ public class FileWatcherThread extends Thread {
 
                         CommandLineTask.run("docker push " + image);
                         LOGGER.info("Image {} built and pushed successfully", image);
+
+                        if(metadata.isRestartAfterBuild()) {
+                            LOGGER.info("Restart all pods with image {}.", image);
+                            NextCluster.instance().groupProvider().groups().stream().filter(it -> it.image().equalsIgnoreCase(image)).forEach(ClusterGroup::shutdown);
+                        }
                     } catch (IOException e) {
                         e.printStackTrace(System.err);
                     }
@@ -110,11 +117,11 @@ public class FileWatcherThread extends Thread {
 
     @SneakyThrows
     private boolean isChanged(Path path, long lastChange) {
-        File[] children = path.toFile().listFiles();
+        var children = path.toFile().listFiles();
         if (children == null) {
             return false;
         }
-        for (File child : children) {
+        for (var child : children) {
             if (child.isDirectory() && isChanged(child.toPath(), lastChange)) {
                 return true;
             } else if (!child.isDirectory()) {

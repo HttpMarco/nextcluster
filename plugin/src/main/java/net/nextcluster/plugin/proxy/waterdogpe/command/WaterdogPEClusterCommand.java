@@ -1,11 +1,9 @@
-package net.nextcluster.plugin.proxy.bungeecord.command;
+package net.nextcluster.plugin.proxy.waterdogpe.command;
 
-import net.kyori.adventure.platform.bungeecord.BungeeAudiences;
+import dev.waterdog.waterdogpe.command.Command;
+import dev.waterdog.waterdogpe.command.CommandSender;
+import dev.waterdog.waterdogpe.player.ProxiedPlayer;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.md_5.bungee.api.CommandSender;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.plugin.Command;
-import net.md_5.bungee.api.plugin.Plugin;
 import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.resource.config.NextConfig;
 import net.nextcluster.driver.resource.service.ClusterService;
@@ -15,24 +13,21 @@ import net.nextcluster.plugin.misc.IngameMessages;
 
 import java.util.Arrays;
 
-public final class BungeeCordClusterCommand extends Command implements ClusterCommand {
+public final class WaterdogPEClusterCommand extends Command implements ClusterCommand {
 
     private final NextConfig<IngameMessages> messages;
-    private final BungeeAudiences adventure;
-
-    public BungeeCordClusterCommand(Plugin plugin, NextConfig<IngameMessages> messages) {
+    public WaterdogPEClusterCommand(NextConfig<IngameMessages> messages) {
         super("cluster");
         this.messages = messages;
-        this.adventure = BungeeAudiences.create(plugin);
     }
 
-    @Override
-    public void execute(CommandSender sender, String[] args) {
 
+    @Override
+    public boolean onExecute(CommandSender sender, String s, String[] args) {
         var player = (ProxiedPlayer) sender;
 
         if (!sender.hasPermission(PERMISSION)) {
-            return;
+            return false;
         }
 
         if (args[0].equalsIgnoreCase("service")) {
@@ -128,7 +123,7 @@ public final class BungeeCordClusterCommand extends Command implements ClusterCo
                 ));
             }
         }
-
+        return true;
     }
 
 
@@ -137,7 +132,7 @@ public final class BungeeCordClusterCommand extends Command implements ClusterCo
             player.sendMessage(message);
             return;
         }
-        adventure.player(player).sendMessage(MiniMessage.miniMessage().deserialize(message));
+        player.sendMessage(MiniMessage.miniMessage().deserialize(message).toString());
     }
 
     private void printServiceInformation(ProxiedPlayer player, ClusterService service, IngameMessages messages) {
@@ -150,21 +145,21 @@ public final class BungeeCordClusterCommand extends Command implements ClusterCo
             return;
         }
         sendMessage(
-            player, prefix + " <dark_gray>   » <gray>Players: <white>" +
-                information.getOnlinePlayers() + "<dark_gray>/<white>" + information.getMaxPlayers()
+                player, prefix + " <dark_gray>   » <gray>Players: <white>" +
+                        information.getOnlinePlayers() + "<dark_gray>/<white>" + information.getMaxPlayers()
         );
         sendMessage(
-            player, prefix + " <dark_gray>   » <gray>MOTD: <white>" + information.getMotd()
+                player, prefix + " <dark_gray>   » <gray>MOTD: <white>" + information.getMotd()
         );
         sendMessage(
-            player, prefix + " <dark_gray>   » <gray>Platform: <white>" + information.getPlatform().id()
+                player, prefix + " <dark_gray>   » <gray>Platform: <white>" + information.getPlatform().id()
         );
         sendMessage(
-            player, prefix + " <dark_gray>   » <gray>CPU: <white>" + information.getCpu() + "<dark_gray>%"
+                player, prefix + " <dark_gray>   » <gray>CPU: <white>" + information.getCpu() + "<dark_gray>%"
         );
         sendMessage(
-            player, prefix + " <dark_gray>   » <gray>Memory: <white>" + information.getMemoryUsage() +
-                "<gray>MB"
+                player, prefix + " <dark_gray>   » <gray>Memory: <white>" + information.getMemoryUsage() +
+                        "<gray>MB"
         );
     }
 }
