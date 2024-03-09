@@ -35,12 +35,11 @@ repositories {
         name = "waterdogpeRepoSnapshots"
         url = uri("https://repo.waterdog.dev/snapshots")
     }
-    //Nukkit
+
+    // Nukkit
     maven {
+        name = "opencollab-repo-snapshot"
         url = uri("https://repo.opencollab.dev/maven-snapshots")
-    }
-    maven {
-        url = uri("https://repo.opencollab.dev/maven-releases")
     }
 }
 
