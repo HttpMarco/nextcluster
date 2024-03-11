@@ -34,7 +34,7 @@ public class EventRegistry {
     private void callLocal(ClusterEvent event) {
         if (eventRegistry.containsKey(event.getClass())) {
             for (var listener : eventRegistry.get(event.getClass()).stream().sorted(Comparator.comparing(it -> it.getValue().getAnnotation(ClusterListener.class).priority())).toList()) {
-                Reflections.callMethod(listener.getValue(), listener.getKey(), event);
+                Reflections.of(listener.getValue().getClass()).applyMethod(listener.getValue().getName(), listener.getKey(), event);
             }
         }
     }

@@ -24,14 +24,13 @@
 
 package net.nextcluster.assembler;
 
-import dev.httpmarco.osgon.files.configuration.gson.JsonUtils;
+import dev.httpmarco.osgan.files.json.JsonUtils;
 import lombok.SneakyThrows;
 import net.nextcluster.assembler.image.ImageMeta;
 import net.nextcluster.assembler.tasks.CommandLineTask;
 import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.resource.group.ClusterGroup;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

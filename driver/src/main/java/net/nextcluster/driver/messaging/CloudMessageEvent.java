@@ -1,6 +1,6 @@
 package net.nextcluster.driver.messaging;
 
-import dev.httpmarco.osgon.files.configuration.gson.JsonDocument;
+import dev.httpmarco.osgan.files.json.JsonObjectSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -13,6 +13,6 @@ public class CloudMessageEvent implements ClusterEvent {
 
     private String channel;
     private String message;
-    private JsonDocument data;
+    private JsonObjectSerializer data;
 
 }

@@ -24,7 +24,7 @@
 
 package net.nextcluster.driver.networking.request;
 
-import dev.httpmarco.osgan.reflections.allocator.ReflectionClassAllocater;
+import dev.httpmarco.osgan.reflections.Reflections;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -52,7 +52,7 @@ public class RequestResponsePacket implements ClusterPacket {
     public void read(ByteBuffer buffer) {
         this.uuid = buffer.readUUID();
         try {
-            this.packet = (ClusterPacket) ReflectionClassAllocater.allocate(Class.forName(buffer.readString()));
+            this.packet = (ClusterPacket) Reflections.of(Class.forName(buffer.readString())).allocate();
             this.packet.read(buffer);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);

@@ -2,7 +2,7 @@ package net.nextcluster.plugin.proxy.velocity;
 
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
-import dev.httpmarco.osgon.files.configuration.ConfigExclude;
+import dev.httpmarco.osgan.files.annotations.ConfigExclude;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import net.nextcluster.driver.resource.player.AbstractClusterPlayer;

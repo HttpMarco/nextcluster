@@ -24,7 +24,7 @@
 
 package net.nextcluster.driver.resource.service;
 
-import dev.httpmarco.osgon.files.configuration.gson.JsonUtils;
+import dev.httpmarco.osgan.files.json.JsonUtils;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.dsl.PodResource;
 import lombok.Getter;

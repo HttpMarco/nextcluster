@@ -1,6 +1,6 @@
 package net.nextcluster.driver.resource.platform;
 
-import dev.httpmarco.osgon.files.configuration.gson.JsonDocument;
+import dev.httpmarco.osgan.files.json.JsonObjectSerializer;
 import net.nextcluster.driver.NextCluster;
 
 import java.io.BufferedReader;
@@ -29,14 +29,14 @@ public class PaperMcPlatform extends DownloadablePlatform {
 
 
     public String getLatestBuildnumber(String version) {
-        var response = new JsonDocument(getURLResponse(String.format(LATEST_BUILDNUMBER_URL, id(), version)));
+        var response = new JsonObjectSerializer(getURLResponse(String.format(LATEST_BUILDNUMBER_URL, id(), version)));
         var builds = response.getJsonObject().getAsJsonArray("builds");
         return builds.get(builds.size() - 1).getAsString();
     }
 
 
     public String getLatestVersion() {
-        var response = new JsonDocument(getURLResponse(String.format(LATEST_VERSION_URL, id())));
+        var response = new JsonObjectSerializer(getURLResponse(String.format(LATEST_VERSION_URL, id())));
         var groups = response.getJsonObject().getAsJsonArray("versions");
         return groups.get(groups.size() - 1).getAsString();
     }
