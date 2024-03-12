@@ -51,7 +51,7 @@ public final class VelocityClusterCommand implements ClusterCommand {
 
     public static BrigadierCommand create(String name, NextConfig<IngameMessages> messages) {
         final var node = BrigadierCommand.literalArgumentBuilder(name)
-            //.requires(source -> source.hasPermission(PERMISSION))
+            .requires(source -> source.hasPermission(PERMISSION))
             .executes(SEND_HELP)
             .then(
                 BrigadierCommand.literalArgumentBuilder("service")
