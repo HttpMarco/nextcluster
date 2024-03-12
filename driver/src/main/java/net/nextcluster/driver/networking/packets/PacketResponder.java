@@ -24,11 +24,11 @@
 
 package net.nextcluster.driver.networking.packets;
 
-import dev.httpmarco.osgon.files.configuration.gson.JsonDocument;
+import dev.httpmarco.osgan.files.json.JsonObjectSerializer;
 import io.netty5.channel.Channel;
 
 public interface PacketResponder<T extends ClusterPacket> {
 
-    T response(Channel channel, JsonDocument packet);
+    T response(Channel channel, JsonObjectSerializer packet);
 
 }

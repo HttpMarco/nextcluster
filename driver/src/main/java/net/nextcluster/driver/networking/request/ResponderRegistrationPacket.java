@@ -22,41 +22,28 @@
  * SOFTWARE.
  */
 
-package net.nextcluster.manager.networking;
+package net.nextcluster.driver.networking.request;
 
-import io.netty5.channel.Channel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import net.nextcluster.driver.NextCluster;
+import net.nextcluster.driver.networking.packets.ByteBuffer;
 import net.nextcluster.driver.networking.packets.ClusterPacket;
-import net.nextcluster.driver.networking.transmitter.NetworkTransmitter;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Accessors(fluent = true)
-public class NettyServerTransmitter extends NetworkTransmitter {
+@AllArgsConstructor
+public class ResponderRegistrationPacket implements ClusterPacket {
 
-    private final List<Channel> channels = new ArrayList<>();
+    private String id;
 
     @Override
-    public void send(ClusterPacket packet) {
-        for (Channel channel : channels) {
-            this.send(channel, packet);
-        }
+    public void write(ByteBuffer buffer) {
+        buffer.writeString(id);
     }
 
     @Override
-    public void send(Channel channel, ClusterPacket packet) {
-        channel.writeAndFlush(packet);
-    }
-
-    public void sendAllAndIgnoreSelf(Channel incomingChannel, ClusterPacket packet) {
-        for (var channel : channels()) {
-            if (!incomingChannel.equals(channel)) {
-                channel.writeAndFlush(packet);
-            }
-        }
+    public void read(ByteBuffer buffer) {
+        this.id = buffer.readString();
     }
 }

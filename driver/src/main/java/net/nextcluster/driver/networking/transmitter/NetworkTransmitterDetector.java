@@ -24,25 +24,54 @@
 
 package net.nextcluster.driver.networking.transmitter;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import dev.httpmarco.osgan.utils.RandomUtils;
+import io.netty5.channel.Channel;
 import net.nextcluster.driver.NextCluster;
-import net.nextcluster.driver.networking.request.BadResponsePacket;
-import net.nextcluster.driver.networking.request.RequestPacket;
-import net.nextcluster.driver.networking.request.RequestResponsePacket;
+import net.nextcluster.driver.networking.request.*;
+
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.UUID;
 
 public final class NetworkTransmitterDetector {
 
+    private final Map<UUID, PendingRequest> pending = Maps.newHashMap();
+    private final Map<String, ArrayList<Channel>> responders = Maps.newHashMap();
+    private final Map<Channel, String> respondersByChannel = Maps.newHashMap();
+
     public NetworkTransmitterDetector(NetworkTransmitter transmitter) {
+        /* SERVER */
         transmitter.registerListener(RequestPacket.class, (channel, packet) -> {
-            if (transmitter.isResponderPresent(packet.id())) {
-                channel.writeAndFlush(new RequestResponsePacket(packet.uniqueId(), transmitter.getResponder(packet.id()).response(channel, packet.document())));
+            if (responders.containsKey(packet.id())) {
+                this.pending.put(packet.uniqueId(), new PendingRequest(channel, packet.id(), System.currentTimeMillis()));
+
+                var responders = this.responders.get(packet.id());
+                var rndm = RandomUtils.getRandomNumber(responders.size());
+
+                transmitter.send(channel, new RequestForwardPacket(rndm, packet.id(), packet.uniqueId(), packet.document()));
+
+                NextCluster.LOGGER.info("Request received: " + packet.id() + " - responder: " + rndm + " - properties: " + packet.document());
             } else {
-                // we send it back, but empty (throw exception on other side)
-               channel.writeAndFlush(new BadResponsePacket(packet.id(), packet.uniqueId()));
+                channel.writeAndFlush(new BadResponsePacket(packet.id(), packet.uniqueId(), "No responder registered for id '" + packet.id() + "'"));
             }
         });
+        transmitter.registerListener(ResponderRegistrationPacket.class, (channel, packet) -> {
+            if (!responders.containsKey(packet.id())) {
+                this.responders.put(packet.id(), Lists.newArrayList());
+            }
+
+            this.responders.get(packet.id()).add(channel);
+            this.respondersByChannel.put(channel, packet.id());
+
+            NextCluster.LOGGER.info("Registered responder: " + packet.id());
+        });
+
+        /* CLIENT */
         transmitter.registerListener(BadResponsePacket.class, (channel, packet) -> {
             if (transmitter.isRequestPresent(packet.uniqueId())) {
-                NextCluster.LOGGER.error("Bad response received for request (responder not found): " + packet.uniqueId());
+                NextCluster.LOGGER.error("Bad response received for request '" + packet.uniqueId() + "': " + packet.message());
                 transmitter.removeRequest(packet.uniqueId());
             }
         });
@@ -51,5 +80,20 @@ public final class NetworkTransmitterDetector {
                 transmitter.acceptRequests(packet.uuid(), packet.packet());
             }
         });
+        transmitter.registerListener(RequestForwardPacket.class, (channel, packet) -> {
+            if (transmitter.isResponderPresent(packet.id())) {
+                channel.writeAndFlush(new RequestResponsePacket(packet.uniqueId(), transmitter.getResponder(packet.id()).response(channel, packet.document())));
+            }
+        });
+    }
+
+    public void unregisterChannel(Channel channel) {
+        if (this.respondersByChannel.containsKey(channel)) {
+            var key = this.respondersByChannel.get(channel);
+            this.responders.remove(key);
+            this.respondersByChannel.remove(channel);
+
+            NextCluster.LOGGER.info("Unregistered responder: " + key);
+        }
     }
 }

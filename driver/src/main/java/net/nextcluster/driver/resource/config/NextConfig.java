@@ -25,7 +25,7 @@
 package net.nextcluster.driver.resource.config;
 
 import com.google.common.base.Preconditions;
-import dev.httpmarco.osgon.files.configuration.gson.JsonUtils;
+import dev.httpmarco.osgan.files.json.JsonUtils;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import lombok.AccessLevel;
 import lombok.Getter;

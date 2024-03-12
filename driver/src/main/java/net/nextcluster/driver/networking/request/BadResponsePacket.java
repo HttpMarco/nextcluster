@@ -39,16 +39,19 @@ public class BadResponsePacket implements ClusterPacket {
 
     private String id;
     private UUID uniqueId;
+    private String message;
 
     @Override
     public void write(ByteBuffer buffer) {
         buffer.writeString(id);
         buffer.writeUUID(uniqueId);
+        buffer.writeString(message);
     }
 
     @Override
     public void read(ByteBuffer buffer) {
         id = buffer.readString();
         uniqueId = buffer.readUUID();
+        message = buffer.readString();
     }
 }

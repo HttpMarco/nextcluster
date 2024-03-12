@@ -24,7 +24,7 @@
 
 package net.nextcluster.plugin.rest;
 
-import dev.httpmarco.osgon.files.configuration.gson.JsonUtils;
+import dev.httpmarco.osgan.files.json.JsonUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.nextcluster.driver.NextCluster;
