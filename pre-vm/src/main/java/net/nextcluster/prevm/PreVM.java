@@ -30,6 +30,7 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import net.nextcluster.driver.NextCluster;
+import net.nextcluster.driver.networking.NetworkUtils;
 import net.nextcluster.driver.resource.platform.DownloadablePlatform;
 import net.nextcluster.driver.resource.platform.Platform;
 import net.nextcluster.driver.resource.platform.PlatformArgs;
@@ -37,6 +38,7 @@ import net.nextcluster.driver.resource.platform.PlatformService;
 import net.nextcluster.driver.resource.platform.paper.PaperPlatform;
 import net.nextcluster.prevm.classloader.AccessibleClassLoader;
 import net.nextcluster.prevm.exception.NoPlatformFoundException;
+import net.nextcluster.prevm.networking.NettyClient;
 import net.nextcluster.prevm.networking.NettyClientTransmitter;
 
 import java.io.File;
@@ -55,6 +57,7 @@ public class PreVM extends NextCluster {
     private static Instrumentation instrumentation;
 
     private final String[] args;
+    private final NettyClient nettyClient;
     private AccessibleClassLoader classLoader;
     @Setter(AccessLevel.PACKAGE)
     private Platform platform;
@@ -62,6 +65,22 @@ public class PreVM extends NextCluster {
     private PreVM(String[] args) {
         super(new NettyClientTransmitter());
         this.args = args;
+        this.nettyClient = new NettyClient((NettyClientTransmitter) transmitter());
+
+        var managerIp = NextCluster.instance()
+                .kubernetes()
+                .pods()
+                .withLabel("app", "manager")
+                .resources()
+                .findFirst()
+                .orElse(null);
+
+        if (managerIp != null) {
+            NextCluster.LOGGER.info("Connecting to manager on '" + managerIp.get().getStatus().getPodIP() + ":" + NetworkUtils.NETTY_PORT + "'");
+            this.nettyClient.connect(managerIp.get().getStatus().getPodIP(), NetworkUtils.NETTY_PORT);
+        } else {
+            NextCluster.LOGGER.error("Could not find a manager pod! Netty will not work.");
+        }
     }
 
     public static void premain(String args, Instrumentation instrumentation) {
