@@ -24,10 +24,21 @@
 
 package net.nextcluster.assembler;
 
-public class Assembler {
+import net.nextcluster.driver.NextCluster;
+import net.nextcluster.driver.networking.transmitter.NetworkTransmitter;
+
+public class Assembler extends NextCluster {
 
     public static void main(String[] args) {
+        // transmitter is not used here
+        new Assembler(null);
+
         new FileWatcherThread().start();
     }
 
+    public Assembler(NetworkTransmitter transmitter) {
+        super(transmitter);
+    }
 }
+
+

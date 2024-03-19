@@ -36,13 +36,14 @@ public class ImageMeta {
     private final String tag;
     private final String url;
     private final Authorization authorization;
-
+    private final boolean restartAfterBuild;
 
     public ImageMeta(String name, String tag, Authorization authorization) {
         this.name = name;
         this.tag = tag;
         this.url = "10.99.214.62:5000";
         this.authorization = authorization;
+        this.restartAfterBuild = true;
     }
 
     @Getter

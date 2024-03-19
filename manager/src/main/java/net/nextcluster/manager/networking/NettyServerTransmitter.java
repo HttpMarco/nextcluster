@@ -43,8 +43,13 @@ public class NettyServerTransmitter extends NetworkTransmitter {
     @Override
     public void send(ClusterPacket packet) {
         for (Channel channel : channels) {
-            channel.writeAndFlush(packet);
+            this.send(channel, packet);
         }
+    }
+
+    @Override
+    public void send(Channel channel, ClusterPacket packet) {
+        channel.writeAndFlush(packet);
     }
 
     public void sendAllAndIgnoreSelf(Channel incomingChannel, ClusterPacket packet) {

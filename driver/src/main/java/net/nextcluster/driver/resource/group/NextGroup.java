@@ -37,7 +37,7 @@ import io.fabric8.kubernetes.model.annotation.Version;
 import lombok.*;
 import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.resource.ClusterResource;
-import net.nextcluster.driver.resource.Platform;
+import net.nextcluster.driver.resource.platform.Platform;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -94,20 +94,22 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
 
     @Override
     public Platform platform() {
-        return Platform.valueOf(this.environment().getOrDefault("PLATFORM", "CUSTOM"));
+        //todo
+        // return Platform.valueOf(this.environment().getOrDefault("PLATFORM", "CUSTOM"));
+        return null;
     }
 
     @Override
     public Map<String, String> environment() {
         return Arrays.stream(getSpec().getBase().environment)
-            .map(env -> env.split("="))
-            .collect(Collectors.toMap(env -> env[0], env -> env[1]));
+                .map(env -> env.split("="))
+                .collect(Collectors.toMap(env -> env[0], env -> env[1]));
     }
 
     @Override
     public void shutdown() {
         for (Pod pod : NextCluster.instance().kubernetes().pods().withLabel("nextcluster/group", this.name())
-            .list().getItems()
+                .list().getItems()
         ) {
             NextCluster.instance().kubernetes().pods().withName(pod.getMetadata().getName()).delete();
         }
@@ -173,10 +175,10 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
 
             public ContainerPort toContainerPort() {
                 return new ContainerPortBuilder()
-                    .withName(this.name)
-                    .withContainerPort(this.port)
-                    .withProtocol(this.protocol)
-                    .build();
+                        .withName(this.name)
+                        .withContainerPort(this.port)
+                        .withProtocol(this.protocol)
+                        .build();
             }
         }
 
@@ -201,9 +203,9 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
 
             public VolumeMount toMount() {
                 return new VolumeMountBuilder()
-                    .withName(this.name)
-                    .withMountPath(this.container)
-                    .build();
+                        .withName(this.name)
+                        .withMountPath(this.container)
+                        .build();
             }
         }
 
@@ -232,9 +234,9 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
             this.spec = new Spec();
 
             this.group.setMetadata(new ObjectMetaBuilder()
-                .withName(name)
-                .withNamespace(NextCluster.instance().kubernetes().getNamespace())
-                .build()
+                    .withName(name)
+                    .withNamespace(NextCluster.instance().kubernetes().getNamespace())
+                    .build()
             );
             this.spec.setBase(new Spec.Base());
             this.group.setStatus(new Status());
@@ -260,13 +262,18 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
             return this;
         }
 
+        public Builder withEnvironment(String key, Object value) {
+            this.group.environment().put(key, value.toString());
+            return this;
+        }
+
         public Builder withMaintenance(boolean value) {
             this.spec.setMaintenance(value);
             return this;
         }
+
         public Builder withPlatform(Platform platform) {
-            group.environment().put("PLATFORM", platform.name());
-            return this;
+            return withEnvironment("PLATFORM", platform.id());
         }
 
         public Builder withStatic(boolean value) {
@@ -288,11 +295,11 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
             NextCluster.LOGGER.info(Serialization.asYaml(group));
 
             NextCluster.instance()
-                .kubernetes()
-                .resources(NextGroup.class)
-                .resource(group)
-                .forceConflicts()
-                .serverSideApply();
+                    .kubernetes()
+                    .resources(NextGroup.class)
+                    .resource(group)
+                    .forceConflicts()
+                    .serverSideApply();
         }
     }
 }

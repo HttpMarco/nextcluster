@@ -24,7 +24,7 @@
 
 package net.nextcluster.driver.networking.request;
 
-import dev.httpmarco.osgon.files.configuration.gson.JsonDocument;
+import dev.httpmarco.osgan.files.json.JsonObjectSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -40,7 +40,7 @@ public class RequestPacket implements ClusterPacket {
 
     private String id;
     private UUID uniqueId;
-    private JsonDocument document;
+    private JsonObjectSerializer document;
 
     @Override
     public void write(ByteBuffer buffer) {
@@ -53,6 +53,6 @@ public class RequestPacket implements ClusterPacket {
     public void read(ByteBuffer buffer) {
         this.id = buffer.readString();
         this.uniqueId = buffer.readUUID();
-        this.document = new JsonDocument(buffer.readString());
+        this.document = new JsonObjectSerializer(buffer.readString());
     }
 }

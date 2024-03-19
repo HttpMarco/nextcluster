@@ -24,7 +24,7 @@
 
 package net.nextcluster.driver.resource.config;
 
-import dev.httpmarco.osgon.files.configuration.gson.JsonUtils;
+import dev.httpmarco.osgan.files.json.JsonUtils;
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
@@ -33,7 +33,6 @@ import lombok.RequiredArgsConstructor;
 import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.resource.config.misc.ConfigProperty;
 
-import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -51,7 +50,7 @@ public class ConfigProvider {
         if (configMap != null) {
             final var value = configMap.getData().get("value");
             if (value != null) {
-                config.value(JsonUtils.fromPrettyJson(value, config.type()));
+                config.value(JsonUtils.fromJson(value, config.type()));
             }
         }
 
@@ -72,7 +71,7 @@ public class ConfigProvider {
                         config.value(null);
                         return;
                     }
-                    config.valueMapping(JsonUtils.fromPrettyJson(value, config.type()));
+                    config.valueMapping(JsonUtils.fromJson(value, config.type()));
                 }
 
                 @Override

@@ -24,76 +24,92 @@
 
 package net.nextcluster.assembler;
 
-import dev.httpmarco.osgon.files.configuration.gson.JsonUtils;
+import dev.httpmarco.osgan.files.json.JsonUtils;
+import dev.httpmarco.osgan.utils.types.MessageUtils;
 import lombok.SneakyThrows;
 import net.nextcluster.assembler.image.ImageMeta;
 import net.nextcluster.assembler.tasks.CommandLineTask;
+import net.nextcluster.driver.NextCluster;
+import net.nextcluster.driver.resource.group.ClusterGroup;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import static net.nextcluster.driver.NextCluster.LOGGER;
 
 public class FileWatcherThread extends Thread {
 
     private static final String DOCKER_IMAGE_FORMAT = "%s/%s:%s";
-    private final Map<String, Long> lastChanged = new ConcurrentHashMap<>();
+    private static final long THREAD_SLEEP_TICKS = TimeUnit.SECONDS.toMillis(5);
+    private final Map<String, Long> lastChecked = new ConcurrentHashMap<>();
+    private final Set<Path> buildQueue = new LinkedHashSet<>();
 
     public FileWatcherThread() {
         super("FileWatcherThread");
     }
 
-    @SuppressWarnings({"unchecked", "BusyWait", "InfiniteLoopStatement"})
+    @SuppressWarnings({"BusyWait"})
     @SneakyThrows
     @Override
     public void run() {
-        final Path images = Path.of("/images");
+        final var images = Path.of("/images");
 
         LOGGER.info("Watching: {}", images.toAbsolutePath());
 
-        while (true) {
-            Files.list(images).forEach(path -> {
-                long lastChange = lastChanged.computeIfAbsent(
-                    path.toAbsolutePath().toString(),
-                    s -> System.currentTimeMillis()
-                );
-                if (isChanged(path, lastChange)) {
-                    LOGGER.info("File {} changed", path.toAbsolutePath());
-                    lastChanged.put(path.toAbsolutePath().toString(), System.currentTimeMillis());
+        while (currentThread().isAlive()) {
+            this.findChangedImages(images);
 
-                    var meta = path.resolve("meta.json");
-                    var dockerfile = path.resolve("Dockerfile");
-                    if (Files.notExists(dockerfile)) {
-                        LOGGER.error("No Dockerfile found ({})", dockerfile.toAbsolutePath());
-                        return;
-                    }
+            if (!this.buildQueue.isEmpty()) {
+                var path = this.buildQueue.stream().findFirst().orElseThrow();
 
-                    try {
-                        final var metadata = JsonUtils.fromJson(Files.readString(meta), ImageMeta.class);
-                        final var image = DOCKER_IMAGE_FORMAT.formatted(metadata.getUrl(), metadata.getName(), metadata.getTag());
+                LOGGER.info("Rebuilding image: {}", path.toFile().getName());
 
-                        CommandLineTask.run("docker build -t " + image + " " + path.toAbsolutePath());
+                this.buildQueue.remove(path);
 
-                        if (metadata.getAuthorization() != null) {
-                            CommandLineTask.run(
+                var meta = path.resolve("meta.json");
+                var dockerfile = path.resolve("Dockerfile");
+
+                if (Files.notExists(dockerfile)) {
+                    LOGGER.error("No Dockerfile found ({})", dockerfile);
+                    return;
+                }
+
+                try {
+                    final var metadata = JsonUtils.fromJson(Files.readString(meta), ImageMeta.class);
+                    final var image = DOCKER_IMAGE_FORMAT.formatted(metadata.getUrl(), metadata.getName(), metadata.getTag());
+
+                    CommandLineTask.run("docker build -t " + image + " " + path.toAbsolutePath());
+
+                    if (metadata.getAuthorization() != null) {
+                        CommandLineTask.run(
                                 "docker", "login", metadata.getUrl(),
                                 "-u", metadata.getAuthorization().getUsername(),
                                 "-p", metadata.getAuthorization().getPassword()
-                            );
-                        }
-
-                        CommandLineTask.run("docker push " + image);
-                        LOGGER.info("Image {} built and pushed successfully", image);
-                    } catch (IOException e) {
-                        e.printStackTrace(System.err);
+                        );
                     }
+
+                    CommandLineTask.run("docker push " + image);
+                    LOGGER.info("Image {} built and pushed successfully", image);
+
+                    if(metadata.isRestartAfterBuild()) {
+                        LOGGER.info("Restart all pods with image {}.", image);
+                        NextCluster.instance().groupProvider().groups().stream().filter(it -> it.image().equalsIgnoreCase(image)).forEach(ClusterGroup::shutdown);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace(System.err);
                 }
-            });
-            Thread.sleep(2000L);
+
+                LOGGER.info("Remaining build queue: {}", (this.buildQueue.isEmpty() ? "empty" : String.join(", ", this.buildQueue.stream().map(path1 -> path1.toFile().getName()).toList())));
+            }
+
+            Thread.sleep(THREAD_SLEEP_TICKS);
         }
     }
 
@@ -108,17 +124,35 @@ public class FileWatcherThread extends Thread {
         return scanParent(parent);
     }
 
+    private void findChangedImages(Path path) {
+        var children = path.toFile().listFiles();
+
+        if (children != null) {
+            for (File child : children) {
+                var lastCheck = this.lastChecked.computeIfAbsent(child.getAbsolutePath(), s -> (System.currentTimeMillis() - THREAD_SLEEP_TICKS));
+
+                this.lastChecked.put(child.getAbsolutePath(), System.currentTimeMillis());
+
+                if (this.isChanged(child.toPath(), lastCheck)) {
+                    this.buildQueue.add(child.toPath());
+
+                    LOGGER.info("Found changes in file {}", child.getName());
+                }
+            }
+        }
+    }
+
     @SneakyThrows
-    private boolean isChanged(Path path, long lastChange) {
-        File[] children = path.toFile().listFiles();
+    private boolean isChanged(Path path, long lastCheck) {
+        var children = path.toFile().listFiles();
         if (children == null) {
             return false;
         }
-        for (File child : children) {
-            if (child.isDirectory() && isChanged(child.toPath(), lastChange)) {
+        for (var child : children) {
+            if (child.isDirectory() && this.isChanged(child.toPath(), lastCheck)) {
                 return true;
             } else if (!child.isDirectory()) {
-                if (child.lastModified() > lastChange) {
+                if (lastCheck < child.lastModified()) {
                     return true;
                 }
             }

@@ -157,7 +157,7 @@ public final class BungeeCordClusterCommand extends Command implements ClusterCo
             player, prefix + " <dark_gray>   » <gray>MOTD: <white>" + information.getMotd()
         );
         sendMessage(
-            player, prefix + " <dark_gray>   » <gray>Platform: <white>" + information.getPlatform().name()
+            player, prefix + " <dark_gray>   » <gray>Platform: <white>" + information.getPlatform().id()
         );
         sendMessage(
             player, prefix + " <dark_gray>   » <gray>CPU: <white>" + information.getCpu() + "<dark_gray>%"

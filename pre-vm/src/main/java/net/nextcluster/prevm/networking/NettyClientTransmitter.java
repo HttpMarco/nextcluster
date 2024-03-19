@@ -40,6 +40,11 @@ public class NettyClientTransmitter extends NetworkTransmitter {
 
     @Override
     public void send(ClusterPacket packet) {
+        this.send(this.channel, packet);
+    }
+
+    @Override
+    public void send(Channel channel, ClusterPacket packet) {
         if (channel != null && channel.isActive()) {
             this.channel.writeAndFlush(packet);
         } else {

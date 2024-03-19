@@ -30,20 +30,24 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import net.nextcluster.driver.NextCluster;
-import net.nextcluster.driver.resource.Platform;
+import net.nextcluster.driver.networking.NetworkUtils;
+import net.nextcluster.driver.resource.platform.DownloadablePlatform;
+import net.nextcluster.driver.resource.platform.Platform;
+import net.nextcluster.driver.resource.platform.PlatformArgs;
+import net.nextcluster.driver.resource.platform.PlatformService;
+import net.nextcluster.driver.resource.platform.paper.PaperPlatform;
 import net.nextcluster.prevm.classloader.AccessibleClassLoader;
+import net.nextcluster.prevm.exception.NoPlatformFoundException;
+import net.nextcluster.prevm.networking.NettyClient;
 import net.nextcluster.prevm.networking.NettyClientTransmitter;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
-import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.jar.JarFile;
-import java.util.stream.Collectors;
 
 @Accessors(fluent = true)
 @Getter
@@ -53,6 +57,7 @@ public class PreVM extends NextCluster {
     private static Instrumentation instrumentation;
 
     private final String[] args;
+    private final NettyClient nettyClient;
     private AccessibleClassLoader classLoader;
     @Setter(AccessLevel.PACKAGE)
     private Platform platform;
@@ -60,6 +65,22 @@ public class PreVM extends NextCluster {
     private PreVM(String[] args) {
         super(new NettyClientTransmitter());
         this.args = args;
+        this.nettyClient = new NettyClient((NettyClientTransmitter) transmitter());
+
+        var managerIp = NextCluster.instance()
+                .kubernetes()
+                .pods()
+                .withLabel("app", "manager")
+                .resources()
+                .findFirst()
+                .orElse(null);
+
+        if (managerIp != null) {
+            NextCluster.LOGGER.info("Connecting to manager on '" + managerIp.get().getStatus().getPodIP() + ":" + NetworkUtils.NETTY_PORT + "'");
+            this.nettyClient.connect(managerIp.get().getStatus().getPodIP(), NetworkUtils.NETTY_PORT);
+        } else {
+            NextCluster.LOGGER.error("Could not find a manager pod! Netty will not work.");
+        }
     }
 
     public static void premain(String args, Instrumentation instrumentation) {
@@ -74,23 +95,22 @@ public class PreVM extends NextCluster {
             throw new IllegalStateException("No PLATFORM environment variable found!");
         }
         try {
-            preVM.platform(Platform.valueOf(env));
+            preVM.platform(PlatformService.detect());
         } catch (IllegalArgumentException e) {
-            throw new IllegalStateException("No platform found for " + env +
-                    "(" + Arrays.stream(Platform.values()).map(Enum::name).collect(Collectors.joining(", ")) + ")"
-            );
+            throw new NoPlatformFoundException();
         }
 
         final var platform = WORKING_DIR.resolve("platform.jar");
         if (Files.notExists(platform)) {
             LOGGER.warn("No platform.jar found, downloading platform...");
-            preVM.downloadPlatform(platform);
+            if (platform instanceof DownloadablePlatform downloadablePlatform) {
+                downloadablePlatform.download(WORKING_DIR);
+            }
         }
 
-        if(!env.equalsIgnoreCase("PAPER")) {
+        if (!env.equalsIgnoreCase("PAPER")) {
             instrumentation.appendToSystemClassLoaderSearch(new JarFile(platform.toFile()));
         }
-
         preVM.startPlatform(platform.toFile());
     }
 
@@ -99,7 +119,7 @@ public class PreVM extends NextCluster {
         this.classLoader = new AccessibleClassLoader(new URL[]{file.toURI().toURL()});
         try (final var jar = new JarFile(file)) {
             final var mainClass = jar.getManifest().getMainAttributes().getValue("Main-Class");
-            if (this.platform.eula()) {
+            if (this.platform instanceof PaperPlatform) {
                 final var eula = WORKING_DIR.resolve("eula.txt").toFile();
                 try {
                     if (!eula.exists() && eula.createNewFile()) {
@@ -112,21 +132,16 @@ public class PreVM extends NextCluster {
             }
             try {
                 LOGGER.info("Invoke Main-Class ({})", mainClass);
-
                 final var main = Class.forName(mainClass, true, classLoader).getMethod("main", String[].class);
-                main.invoke(null, (Object) platform.args());
+
+                if (platform instanceof PlatformArgs platformArgs) {
+                    main.invoke(null, (Object) platformArgs.args());
+                } else {
+                    main.invoke(null, (Object) new String[0]);
+                }
             } catch (Exception e) {
                 e.printStackTrace(System.err);
             }
-        }
-    }
-
-    private void downloadPlatform(Path path) {
-        try {
-            final URL url = URI.create(platform.url()).toURL();
-            Files.copy(url.openConnection().getInputStream(), path);
-        } catch (IllegalArgumentException | IOException e) {
-            e.printStackTrace(System.err);
         }
     }
 }
