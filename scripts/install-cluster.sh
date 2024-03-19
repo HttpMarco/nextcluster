@@ -106,6 +106,10 @@ else
   message "Worker-Join-Command: $JOIN_COMMAND"
 fi
 
+sudo sysctl -w fs.inotify.max_user_watches=2099999999
+sudo sysctl -w fs.inotify.max_user_instances=2099999999
+sudo sysctl -w fs.inotify.max_queued_events=2099999999
+
 message "Initializing nextCluster (namespace: nextCluster)..."
 kubectl apply -f https://raw.githubusercontent.com/nextCluster/nextCluster/master/scripts/init-cluster.yml
 message "nextCluster installation finished!"
