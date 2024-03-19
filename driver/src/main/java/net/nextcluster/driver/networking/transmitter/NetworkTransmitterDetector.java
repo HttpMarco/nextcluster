@@ -58,7 +58,6 @@ public final class NetworkTransmitterDetector {
             }
         });
         transmitter.registerListener(ResponderRegistrationPacket.class, (channel, packet) -> {
-            System.out.println(123);
             if (!responders.containsKey(packet.id())) {
                 this.responders.put(packet.id(), Lists.newArrayList());
             }
@@ -66,7 +65,7 @@ public final class NetworkTransmitterDetector {
             this.responders.get(packet.id()).add(channel);
             this.respondersByChannel.put(channel, packet.id());
 
-            NextCluster.LOGGER.info("Registered responder: " + packet.id());
+            NextCluster.LOGGER.info("Registered responder: {}", packet.id());
         });
 
         /* CLIENT */

@@ -29,7 +29,10 @@ plugins {
 dependencies {
     api(project(":driver"))
     implementation(project(":driver"))
-    implementation(libs.log4j)
+    implementation(libs.bundles.logger)
+
+    // we this for paper logging
+    implementation("com.lmax:disruptor:3.4.2")
 }
 
 tasks.shadowJar {
@@ -38,11 +41,5 @@ tasks.shadowJar {
         attributes["Premain-Class"] = "net.nextcluster.prevm.PreVM"
         attributes["Multi-Release"] = "true"
     }
-
-    relocate("org.apache.logging.log4j", "net.nextcluster.prevm.shaded.log4j")
-
-
-
-    relocate("org.apache.logging.log4j", "net.nextcluster.prevm.shaded.log4j")
     archiveFileName.set("pre-vm.jar")
 }

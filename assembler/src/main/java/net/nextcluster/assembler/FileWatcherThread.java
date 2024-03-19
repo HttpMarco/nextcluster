@@ -47,7 +47,7 @@ import static net.nextcluster.driver.NextCluster.LOGGER;
 public class FileWatcherThread extends Thread {
 
     private static final String DOCKER_IMAGE_FORMAT = "%s/%s:%s";
-    private static final long THREAD_SLEEP_TICKS = TimeUnit.SECONDS.toMillis(15);
+    private static final long THREAD_SLEEP_TICKS = TimeUnit.SECONDS.toMillis(5);
     private final Map<String, Long> lastChecked = new ConcurrentHashMap<>();
     private final Set<Path> buildQueue = new LinkedHashSet<>();
 
