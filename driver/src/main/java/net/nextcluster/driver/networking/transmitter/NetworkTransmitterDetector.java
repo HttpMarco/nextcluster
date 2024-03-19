@@ -58,6 +58,7 @@ public final class NetworkTransmitterDetector {
             }
         });
         transmitter.registerListener(ResponderRegistrationPacket.class, (channel, packet) -> {
+            System.out.println(123);
             if (!responders.containsKey(packet.id())) {
                 this.responders.put(packet.id(), Lists.newArrayList());
             }

@@ -35,6 +35,8 @@ import io.netty5.channel.socket.nio.NioSocketChannel;
 
 public final class NetworkUtils {
 
+    public static final Integer NETTY_PORT = Integer.parseInt(System.getProperty("netty.port", "9090"));
+
     public static MultithreadEventLoopGroup createEventLoopGroup(int threads) {
         return new MultithreadEventLoopGroup(threads, Epoll.isAvailable() ? EpollHandler.newFactory() : NioHandler.newFactory());
     }

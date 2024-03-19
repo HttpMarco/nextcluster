@@ -25,7 +25,9 @@
 package net.nextcluster.manager;
 
 import net.nextcluster.driver.NextCluster;
+import net.nextcluster.driver.networking.NetworkUtils;
 import net.nextcluster.driver.resource.group.NextGroup;
+import net.nextcluster.manager.networking.NettyServer;
 import net.nextcluster.manager.networking.NettyServerTransmitter;
 import net.nextcluster.manager.resources.group.NextGroupWatcher;
 import net.nextcluster.manager.resources.player.ManagerCloudPlayerProvider;
@@ -45,6 +47,10 @@ public class NextClusterManager extends NextCluster {
     protected NextClusterManager() {
         // register communication transmitter (priority)
         super(new NettyServerTransmitter());
+
+        // initialize netty server
+        var nettyServer = new NettyServer();
+        nettyServer.initialize(NetworkUtils.NETTY_PORT);
 
         // wait for the transmitter to be ready
         playerProvider(new ManagerCloudPlayerProvider(this.transmitter()));

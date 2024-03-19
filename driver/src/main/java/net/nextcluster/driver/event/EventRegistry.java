@@ -13,7 +13,9 @@ public class EventRegistry {
     private final Map<Class<? extends ClusterEvent>, List<Pair<Object, Method>>> eventRegistry = new HashMap<>();
 
     public EventRegistry() {
-        NextCluster.instance().transmitter().registerListener(ClusterEventCallPacket.class, (channel, packet) -> callLocal(packet.event()));
+        if (NextCluster.instance().transmitter() != null) {
+            NextCluster.instance().transmitter().registerListener(ClusterEventCallPacket.class, (channel, packet) -> callLocal(packet.event()));
+        }
     }
 
     @SuppressWarnings("unchecked")
