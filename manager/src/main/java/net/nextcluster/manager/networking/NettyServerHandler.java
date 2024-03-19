@@ -40,19 +40,19 @@ public final class NettyServerHandler extends SimpleChannelInboundHandler<Cluste
     @Override
     protected void messageReceived(ChannelHandlerContext ctx, ClusterPacket msg) {
         NextCluster.instance().transmitter().call(ctx.channel(), msg);
-        NextCluster.LOGGER.debug("Received message: " + msg.getClass().getSimpleName() + " from " + ctx.channel().remoteAddress());
+        NextCluster.LOGGER.info("Received message: " + msg.getClass().getSimpleName() + " from " + ctx.channel().remoteAddress());
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         ((NettyServerTransmitter) NextCluster.instance().transmitter()).channels().add(ctx.channel());
-        NextCluster.LOGGER.debug("Channel active: " + ctx.channel().remoteAddress());
+        NextCluster.LOGGER.info("Channel active: " + ctx.channel().remoteAddress());
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         ((NettyServerTransmitter) NextCluster.instance().transmitter()).channels().remove(ctx.channel());
-        NextCluster.LOGGER.debug("Channel inactive: " + ctx.channel().remoteAddress());
+        NextCluster.LOGGER.info("Channel inactive: " + ctx.channel().remoteAddress());
         NextCluster.instance().transmitter().unregisterChannel(ctx.channel());
     }
 
