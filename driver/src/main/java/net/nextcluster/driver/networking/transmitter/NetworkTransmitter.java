@@ -25,6 +25,7 @@
 package net.nextcluster.driver.networking.transmitter;
 
 import dev.httpmarco.osgan.files.json.JsonObjectSerializer;
+import dev.httpmarco.osgan.files.json.JsonUtils;
 import dev.httpmarco.osgan.utils.types.ListUtils;
 import io.netty5.channel.Channel;
 import net.nextcluster.driver.networking.packets.ClusterPacket;
@@ -40,6 +41,7 @@ public abstract class NetworkTransmitter {
 
     private final Map<String, PacketResponder<?>> responders = new HashMap<>();
     private final Map<UUID, Consumer<ClusterPacket>> requests = new HashMap<>();
+    private final Map<UUID, Class<? extends ClusterPacket>> requestClass = new HashMap<>();
     private final Map<Class<? extends ClusterPacket>, List<PacketListener<ClusterPacket>>> listeners = new HashMap<>();
 
     private final NetworkTransmitterDetector detector;
@@ -72,6 +74,7 @@ public abstract class NetworkTransmitter {
         var uniqueId = UUID.randomUUID();
         this.send(new RequestPacket(id, uniqueId, requestDocument));
         this.requests.put(uniqueId, (Consumer<ClusterPacket>) consumer);
+        this.requestClass.put(uniqueId, responsePacket);
     }
 
     public <T extends ClusterPacket> void request(String id, Class<T> responsePacket, Consumer<T> consumer) {
@@ -87,13 +90,14 @@ public abstract class NetworkTransmitter {
         return this.requests.containsKey(id);
     }
 
-    public void acceptRequests(UUID id, ClusterPacket packet) {
-        this.requests.get(id).accept(packet);
+    public void acceptRequests(UUID id, String response) {
+        this.requests.get(id).accept(JsonUtils.fromJson(response, this.requestClass.get(id)));
         this.removeRequest(id);
     }
 
     public void removeRequest(UUID id) {
         this.requests.remove(id);
+        this.requestClass.remove(id);
     }
 
     public boolean isResponderPresent(String id) {

@@ -98,9 +98,12 @@ public final class NetworkTransmitterDetector {
                 if (this.pending.containsKey(packet.uuid())) {
                     this.pending.get(packet.uuid()).channel().writeAndFlush(packet);
                 }
+
+                NextCluster.LOGGER.info("Received response: {}", packet.uuid());
             } else {
                 if (transmitter.isRequestPresent(packet.uuid())) {
-                    transmitter.acceptRequests(packet.uuid(), JsonUtils.fromJson(packet.packet(), ClusterPacket.class));
+                    NextCluster.LOGGER.info("Received response: {}", packet.uuid());
+                    transmitter.acceptRequests(packet.uuid(), packet.packet());
                 }
             }
         });
