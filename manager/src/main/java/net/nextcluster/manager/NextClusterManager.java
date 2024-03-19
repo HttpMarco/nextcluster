@@ -25,6 +25,7 @@
 package net.nextcluster.manager;
 
 import net.nextcluster.driver.NextCluster;
+import net.nextcluster.driver.event.ClusterEventCallPacket;
 import net.nextcluster.driver.networking.NetworkUtils;
 import net.nextcluster.driver.resource.group.NextGroup;
 import net.nextcluster.manager.networking.NettyServer;

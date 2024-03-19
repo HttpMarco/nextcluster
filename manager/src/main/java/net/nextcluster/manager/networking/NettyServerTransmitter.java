@@ -27,7 +27,6 @@ package net.nextcluster.manager.networking;
 import io.netty5.channel.Channel;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.networking.packets.ClusterPacket;
 import net.nextcluster.driver.networking.transmitter.NetworkTransmitter;
 

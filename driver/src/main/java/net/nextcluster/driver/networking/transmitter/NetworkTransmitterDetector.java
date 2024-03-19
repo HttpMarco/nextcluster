@@ -30,7 +30,6 @@ import dev.httpmarco.osgan.files.json.JsonUtils;
 import dev.httpmarco.osgan.utils.RandomUtils;
 import io.netty5.channel.Channel;
 import net.nextcluster.driver.NextCluster;
-import net.nextcluster.driver.networking.packets.ClusterPacket;
 import net.nextcluster.driver.networking.request.*;
 
 import java.util.ArrayList;
