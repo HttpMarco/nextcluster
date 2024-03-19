@@ -1,9 +1,8 @@
 package net.nextcluster.plugin.proxy.waterdogpe;
 
-import dev.httpmarco.osgon.files.configuration.ConfigExclude;
+import dev.httpmarco.osgan.files.annotations.ConfigExclude;
 import dev.waterdog.waterdogpe.ProxyServer;
 import dev.waterdog.waterdogpe.player.ProxiedPlayer;
-import net.md_5.bungee.api.chat.TextComponent;
 import net.nextcluster.driver.resource.player.AbstractClusterPlayer;
 
 public final class WaterdogPEClusterPlayer extends AbstractClusterPlayer {

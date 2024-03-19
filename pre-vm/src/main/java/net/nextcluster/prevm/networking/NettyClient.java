@@ -28,6 +28,7 @@ import io.netty5.bootstrap.Bootstrap;
 import io.netty5.channel.ChannelOption;
 import io.netty5.channel.EventLoopGroup;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.networking.NetworkChannelInitializer;
@@ -35,11 +36,12 @@ import net.nextcluster.driver.networking.NetworkUtils;
 
 import java.util.concurrent.CompletableFuture;
 
+@RequiredArgsConstructor
 public class NettyClient {
 
     @Getter
     @Accessors(fluent = true)
-    private final NettyClientTransmitter transmitter = new NettyClientTransmitter();
+    private final NettyClientTransmitter transmitter;
     private final EventLoopGroup eventLoopGroup = NetworkUtils.createEventLoopGroup(1);
 
     public CompletableFuture<Void> connect(String hostname, int port) {

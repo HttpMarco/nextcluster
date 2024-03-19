@@ -21,7 +21,6 @@ message() {
 message 'Updating system...'
 
 apt install sudo
-sudo dpkg --configure -a -E --no-pager -O -G --force
 sudo apt-get update
 sudo apt-get upgrade -y
 sudo apt-get install wget -y
@@ -74,9 +73,9 @@ swapoff -a
 apt-get install gnupg gnupg1 gnupg2 -y
 
 # Add Kubernetes-Repository
-sudo apt-get update && sudo apt-get install -y apt-transport-https -y
-curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
-echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list > /dev/null
+sudo DEBIAN_FRONTEND=noninteractive apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https -y
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list > /dev/null
 
 KUBELET_CONF="/etc/kubernetes/kubelet.conf"
 if [ -e "$KUBELET_CONF" ]; then

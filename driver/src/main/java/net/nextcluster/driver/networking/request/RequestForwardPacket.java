@@ -22,41 +22,40 @@
  * SOFTWARE.
  */
 
-package net.nextcluster.manager.networking;
+package net.nextcluster.driver.networking.request;
 
-import io.netty5.channel.Channel;
+import dev.httpmarco.osgan.files.json.JsonObjectSerializer;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import net.nextcluster.driver.NextCluster;
+import net.nextcluster.driver.networking.packets.ByteBuffer;
 import net.nextcluster.driver.networking.packets.ClusterPacket;
-import net.nextcluster.driver.networking.transmitter.NetworkTransmitter;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Accessors(fluent = true)
-public class NettyServerTransmitter extends NetworkTransmitter {
+@AllArgsConstructor
+public class RequestForwardPacket implements ClusterPacket {
 
-    private final List<Channel> channels = new ArrayList<>();
+    private int responderId;
+    private String id;
+    private UUID uniqueId;
+    private JsonObjectSerializer document;
 
     @Override
-    public void send(ClusterPacket packet) {
-        for (Channel channel : channels) {
-            this.send(channel, packet);
-        }
+    public void write(ByteBuffer buffer) {
+        buffer.writeInt(responderId);
+        buffer.writeString(id);
+        buffer.writeUUID(uniqueId);
+        buffer.writeString(document.toString());
     }
 
     @Override
-    public void send(Channel channel, ClusterPacket packet) {
-        channel.writeAndFlush(packet);
-    }
-
-    public void sendAllAndIgnoreSelf(Channel incomingChannel, ClusterPacket packet) {
-        for (var channel : channels()) {
-            if (!incomingChannel.equals(channel)) {
-                channel.writeAndFlush(packet);
-            }
-        }
+    public void read(ByteBuffer buffer) {
+        this.responderId = buffer.readInt();
+        this.id = buffer.readString();
+        this.uniqueId = buffer.readUUID();
+        this.document = new JsonObjectSerializer(buffer.readString());
     }
 }

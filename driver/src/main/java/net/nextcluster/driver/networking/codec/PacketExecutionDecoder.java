@@ -24,7 +24,7 @@
 
 package net.nextcluster.driver.networking.codec;
 
-import dev.httpmarco.osgan.reflections.allocator.ReflectionClassAllocater;
+import dev.httpmarco.osgan.reflections.Reflections;
 import io.netty5.buffer.Buffer;
 import io.netty5.channel.ChannelHandlerContext;
 import io.netty5.handler.codec.ByteToMessageDecoder;
@@ -41,8 +41,8 @@ public final class PacketExecutionDecoder extends ByteToMessageDecoder {
 
         try {
             var packetClass = Class.forName(packetPackageId);
-            var packet = (ClusterPacket) ReflectionClassAllocater.allocate(packetClass);
-            packet.read(byteBuffer);
+            var packet = Reflections.of(packetClass).allocate();
+            ((ClusterPacket) packet).read(byteBuffer);
             channelHandlerContext.fireChannelRead(packet);
         } catch (ClassNotFoundException e) {
             NextCluster.LOGGER.error("Failed to find packet class: " + packetPackageId);

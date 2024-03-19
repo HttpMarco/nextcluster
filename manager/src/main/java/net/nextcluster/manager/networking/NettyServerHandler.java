@@ -53,6 +53,7 @@ public final class NettyServerHandler extends SimpleChannelInboundHandler<Cluste
     public void channelInactive(ChannelHandlerContext ctx) {
         ((NettyServerTransmitter) NextCluster.instance().transmitter()).channels().remove(ctx.channel());
         NextCluster.LOGGER.debug("Channel inactive: " + ctx.channel().remoteAddress());
+        NextCluster.instance().transmitter().unregisterChannel(ctx.channel());
     }
 
     @Override

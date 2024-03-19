@@ -24,13 +24,14 @@
 
 package net.nextcluster.driver.networking.transmitter;
 
+import dev.httpmarco.osgan.files.json.JsonObjectSerializer;
 import dev.httpmarco.osgan.utils.types.ListUtils;
-import dev.httpmarco.osgon.files.configuration.gson.JsonDocument;
 import io.netty5.channel.Channel;
 import net.nextcluster.driver.networking.packets.ClusterPacket;
 import net.nextcluster.driver.networking.packets.PacketListener;
 import net.nextcluster.driver.networking.packets.PacketResponder;
 import net.nextcluster.driver.networking.request.RequestPacket;
+import net.nextcluster.driver.networking.request.ResponderRegistrationPacket;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -41,8 +42,14 @@ public abstract class NetworkTransmitter {
     private final Map<UUID, Consumer<ClusterPacket>> requests = new HashMap<>();
     private final Map<Class<? extends ClusterPacket>, List<PacketListener<ClusterPacket>>> listeners = new HashMap<>();
 
+    private final NetworkTransmitterDetector detector;
+
     public NetworkTransmitter() {
-        new NetworkTransmitterDetector(this);
+        this.detector = new NetworkTransmitterDetector(this);
+    }
+
+    public void unregisterChannel(Channel channel) {
+        this.detector.unregisterChannel(channel);
     }
 
     public void call(Channel channel, ClusterPacket clusterPacket) {
@@ -53,24 +60,27 @@ public abstract class NetworkTransmitter {
 
     public abstract void send(ClusterPacket packet);
 
+    public abstract void send(Channel channel, ClusterPacket packet);
+
     @SuppressWarnings("unchecked")
     public <T extends ClusterPacket> void registerListener(Class<T> searchedClassed, PacketListener<T> listener) {
         listeners.put(searchedClassed, ListUtils.append(listeners.getOrDefault(searchedClassed, new ArrayList<>()), (PacketListener<ClusterPacket>) listener));
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends ClusterPacket> void request(String id, JsonDocument requestDocument, Class<T> responsePacket, Consumer<T> consumer) {
+    public <T extends ClusterPacket> void request(String id, JsonObjectSerializer requestDocument, Class<T> responsePacket, Consumer<T> consumer) {
         var uniqueId = UUID.randomUUID();
         this.send(new RequestPacket(id, uniqueId, requestDocument));
         this.requests.put(uniqueId, (Consumer<ClusterPacket>) consumer);
     }
 
     public <T extends ClusterPacket> void request(String id, Class<T> responsePacket, Consumer<T> consumer) {
-        this.request(id, new JsonDocument(), responsePacket, consumer);
+        this.request(id, new JsonObjectSerializer(), responsePacket, consumer);
     }
 
     public <T extends ClusterPacket> void setResponder(String id, PacketResponder<T> responder) {
         this.responders.put(id, responder);
+        this.send(new ResponderRegistrationPacket(id));
     }
 
     public boolean isRequestPresent(UUID id) {
