@@ -85,13 +85,10 @@ public class PreVM extends NextCluster {
             NextCluster.LOGGER.error("Could not find a manager pod! Netty will not work.");
         }
 
-        NextCluster.LOGGER.info("Registering event listener");
-
         transmitter().registerListener(ClusterEventCallPacket.class, (channel, packet) -> {
-            NextCluster.LOGGER.info("Event called.");
-
             try {
                 NextCluster.instance().eventRegistry().callLocal(JsonUtils.fromJson(packet.event(), (Class<? extends ClusterEvent>) Class.forName(packet.eventClass())));
+                System.out.println("called local");
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }

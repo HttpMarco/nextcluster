@@ -27,18 +27,22 @@ package net.nextcluster.plugin.proxy.velocity;
 import com.google.inject.Inject;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
+import com.velocitypowered.api.event.connection.LoginEvent;
+import com.velocitypowered.api.event.connection.PostLoginEvent;
 import com.velocitypowered.api.event.player.KickedFromServerEvent;
 import com.velocitypowered.api.event.player.PlayerChooseInitialServerEvent;
-import com.velocitypowered.api.event.player.ServerConnectedEvent;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.proxy.server.ServerInfo;
+import dev.httpmarco.osgan.files.json.JsonUtils;
 import dev.httpmarco.osgan.utils.data.Pair;
+import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.nextcluster.driver.NextCluster;
+import net.nextcluster.driver.resource.player.ClusterPlayer;
 import net.nextcluster.driver.resource.player.packets.ClusterPlayerConnectPacket;
 import net.nextcluster.driver.resource.player.packets.ClusterPlayerDisconnectPacket;
 import net.nextcluster.driver.resource.service.ServiceInformation;
@@ -48,17 +52,18 @@ import net.nextcluster.plugin.proxy.velocity.command.VelocityClusterCommand;
 
 import java.net.InetSocketAddress;
 import java.util.Optional;
-
+import java.util.UUID;
 
 @Plugin(
-    id = "nextcluster",
-    name = "NextCluster",
-    version = "1.0.0",
-    url = "https://nextcluster.net",
-    authors = {"NextCluster"}
+        id = "nextcluster",
+        name = "NextCluster",
+        version = "1.0.0",
+        url = "https://nextcluster.net",
+        authors = {"NextCluster"}
 )
 public class NextClusterVelocity extends NextClusterProxy {
 
+    @Getter
     private final ProxyServer server;
 
     @Inject
@@ -81,8 +86,14 @@ public class NextClusterVelocity extends NextClusterProxy {
     @Override
     public void registerServer(InternalClusterServer server) {
         this.server.registerServer(new ServerInfo(
-            server.name(), new InetSocketAddress(server.ip(), 25565)
+                server.name(), new InetSocketAddress(server.ip(), 25565)
         ));
+    }
+
+    @Override
+    public ClusterPlayer buildPlayer(UUID uniqueId, String currentProxyName) {
+        var player = this.server.getPlayer(uniqueId).orElseThrow();
+        return new VelocityClusterPlayer(player);
     }
 
     @Override
@@ -91,12 +102,8 @@ public class NextClusterVelocity extends NextClusterProxy {
     }
 
     @Subscribe
-    public void onPlayerConnect(ServerConnectedEvent event) {
-        if (event.getPreviousServer().isPresent()) {
-
-        } else {
-            NextCluster.instance().transmitter().send(new ClusterPlayerConnectPacket(new VelocityClusterPlayer(this.server, event.getPlayer())));
-        }
+    public void onPostLogin(LoginEvent event) {
+        NextCluster.instance().transmitter().send(new ClusterPlayerConnectPacket(new VelocityClusterPlayer(event.getPlayer())));
     }
 
     @Subscribe
@@ -107,8 +114,8 @@ public class NextClusterVelocity extends NextClusterProxy {
     @Subscribe
     public void onChooseInitialServer(PlayerChooseInitialServerEvent event) {
         findFallback().ifPresentOrElse(
-            event::setInitialServer,
-            () -> event.getPlayer().disconnect(Component.text("No server available!"))
+                event::setInitialServer,
+                () -> event.getPlayer().disconnect(Component.text("No server available!"))
         );
     }
 
@@ -133,13 +140,13 @@ public class NextClusterVelocity extends NextClusterProxy {
     @Override
     public ServiceInformation currentInformation() {
         return new ServiceInformation(
-            this.server.getPlayerCount(),
-            this.server.getConfiguration().getShowMaxPlayers(),
-            ((TextComponent) this.server.getConfiguration().getMotd()).content(),
-            this.server.getAllPlayers()
-                .stream()
-                .map(player -> new Pair<>(player.getUniqueId(), player.getUsername()))
-                .toList()
+                this.server.getPlayerCount(),
+                this.server.getConfiguration().getShowMaxPlayers(),
+                ((TextComponent) this.server.getConfiguration().getMotd()).content(),
+                this.server.getAllPlayers()
+                        .stream()
+                        .map(player -> new Pair<>(player.getUniqueId(), player.getUsername()))
+                        .toList()
         );
     }
 

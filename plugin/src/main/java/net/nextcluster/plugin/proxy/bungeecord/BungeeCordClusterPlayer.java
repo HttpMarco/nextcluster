@@ -5,8 +5,9 @@ import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.nextcluster.driver.resource.player.AbstractClusterPlayer;
+import net.nextcluster.driver.resource.player.DefaultClusterPlayer;
 
-public final class BungeeCordClusterPlayer extends AbstractClusterPlayer {
+public final class BungeeCordClusterPlayer extends DefaultClusterPlayer {
 
     @ConfigExclude
     private final ProxiedPlayer player;

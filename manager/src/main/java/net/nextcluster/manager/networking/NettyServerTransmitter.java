@@ -51,6 +51,11 @@ public class NettyServerTransmitter extends NetworkTransmitter {
         channel.writeAndFlush(packet);
     }
 
+    @Override
+    public <T extends ClusterPacket> void forward(T t) {
+        send(t);
+    }
+
     public void sendAllAndIgnoreSelf(Channel incomingChannel, ClusterPacket packet) {
         for (var channel : channels()) {
             if (!incomingChannel.equals(channel)) {
