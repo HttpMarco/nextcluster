@@ -3,7 +3,9 @@ package net.nextcluster.driver.event;
 import dev.httpmarco.osgan.reflections.Reflections;
 import dev.httpmarco.osgan.utils.data.Pair;
 import dev.httpmarco.osgan.utils.types.ListUtils;
+import lombok.SneakyThrows;
 import net.nextcluster.driver.NextCluster;
+import net.nextcluster.driver.messaging.CloudMessageEvent;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -17,7 +19,7 @@ public class EventRegistry {
         for (var method : listener.getClass().getDeclaredMethods()) {
             if (method.isAnnotationPresent(ClusterListener.class)) {
                 var types = method.getParameterTypes();
-                if (types.length == 0 || !types[0].isAssignableFrom(ClusterEvent.class)) {
+                if (types.length == 0 || !ClusterEvent.class.isAssignableFrom(types[0])) {
                     continue;
                 }
                 eventRegistry.put((Class<? extends ClusterEvent>) types[0],
@@ -27,10 +29,11 @@ public class EventRegistry {
         }
     }
 
+    @SneakyThrows
     public void callLocal(ClusterEvent event) {
         if (eventRegistry.containsKey(event.getClass())) {
             for (var listener : eventRegistry.get(event.getClass()).stream().sorted(Comparator.comparing(it -> it.getValue().getAnnotation(ClusterListener.class).priority())).toList()) {
-                Reflections.of(listener.getValue().getClass()).applyMethod(listener.getValue().getName(), listener.getKey(), event);
+                listener.getKey().getClass().getDeclaredMethod(listener.getValue().getName(), event.getClass()).invoke(listener.getKey(), event);
             }
         }
     }
