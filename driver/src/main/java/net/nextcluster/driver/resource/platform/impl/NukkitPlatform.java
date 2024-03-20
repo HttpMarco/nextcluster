@@ -5,7 +5,7 @@ import net.nextcluster.driver.resource.platform.PlatformArgs;
 
 public class NukkitPlatform extends DownloadablePlatform implements PlatformArgs {
     public NukkitPlatform() {
-        super("NUKKIT", "https://ci.opencollab.dev/job/NukkitX/job/Nukkit/job/master/lastSuccessfulBuild/artifact/target/nukkit-1.0-SNAPSHOT.jar");
+        super("PROXY", "NUKKIT", "https://ci.opencollab.dev/job/NukkitX/job/Nukkit/job/master/lastSuccessfulBuild/artifact/target/nukkit-1.0-SNAPSHOT.jar");
     }
 
     @Override

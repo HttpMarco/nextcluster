@@ -12,22 +12,24 @@ import net.nextcluster.driver.networking.packets.ClusterPacket;
 @AllArgsConstructor
 public class ClusterEventCallPacket implements ClusterPacket {
 
-    private ClusterEvent event;
+    private String eventClass;
+    private String event;
+
+    public ClusterEventCallPacket(ClusterEvent event) {
+        this.eventClass = event.getClass().getName();
+        this.event = JsonUtils.toJson(event);
+    }
 
     @Override
     public void write(ByteBuffer buffer) {
-        buffer.writeString(buffer.getClass().getName());
-        buffer.writeString(JsonUtils.toJson(event));
+        buffer.writeString(eventClass);
+        buffer.writeString(event);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public void read(ByteBuffer buffer) {
-        try {
-            Class<?> element = Class.forName(buffer.readString());
-            this.event = JsonUtils.fromJson(buffer.readString(), (Class<ClusterEvent>) element);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        this.eventClass = buffer.readString();
+        this.event = buffer.readString();
     }
 }

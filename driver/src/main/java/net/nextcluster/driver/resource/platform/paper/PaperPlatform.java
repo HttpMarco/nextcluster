@@ -6,7 +6,7 @@ import net.nextcluster.driver.resource.platform.VersionalPlatform;
 public class PaperPlatform extends PaperMcPlatform implements VersionalPlatform {
 
     public PaperPlatform() {
-        super("paper");
+        super("SERVER", "paper");
     }
 
     @Override

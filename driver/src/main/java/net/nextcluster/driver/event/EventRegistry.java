@@ -12,12 +12,6 @@ public class EventRegistry {
 
     private final Map<Class<? extends ClusterEvent>, List<Pair<Object, Method>>> eventRegistry = new HashMap<>();
 
-    public EventRegistry() {
-        if (NextCluster.instance().transmitter() != null) {
-            NextCluster.instance().transmitter().registerListener(ClusterEventCallPacket.class, (channel, packet) -> callLocal(packet.event()));
-        }
-    }
-
     @SuppressWarnings("unchecked")
     public void registerListener(Object listener) {
         for (var method : listener.getClass().getDeclaredMethods()) {
@@ -33,7 +27,7 @@ public class EventRegistry {
         }
     }
 
-    private void callLocal(ClusterEvent event) {
+    public void callLocal(ClusterEvent event) {
         if (eventRegistry.containsKey(event.getClass())) {
             for (var listener : eventRegistry.get(event.getClass()).stream().sorted(Comparator.comparing(it -> it.getValue().getAnnotation(ClusterListener.class).priority())).toList()) {
                 Reflections.of(listener.getValue().getClass()).applyMethod(listener.getValue().getName(), listener.getKey(), event);

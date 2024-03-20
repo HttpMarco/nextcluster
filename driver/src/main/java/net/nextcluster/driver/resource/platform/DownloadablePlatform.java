@@ -10,8 +10,8 @@ public abstract class DownloadablePlatform extends Platform {
 
     private final String downloadUrl;
 
-    public DownloadablePlatform(String id, String downloadUrl) {
-        super(id);
+    public DownloadablePlatform(String type, String id, String downloadUrl) {
+        super(type, id);
         this.downloadUrl = downloadUrl;
     }
 

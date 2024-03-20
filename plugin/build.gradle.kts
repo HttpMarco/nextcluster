@@ -73,7 +73,7 @@ tasks.withType<Jar> {
     plugin.writeText(
         """
         name: NextCluster
-        author: HabsGleich
+        author: NextCluster
         version: %s
         main: net.nextcluster.plugin.server.spigot.SpigotClusterPlugin
     """.trimIndent().format(project.version))

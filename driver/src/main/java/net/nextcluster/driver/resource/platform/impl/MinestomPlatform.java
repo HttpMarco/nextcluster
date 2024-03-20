@@ -13,7 +13,7 @@ public class MinestomPlatform extends DownloadablePlatform implements PlatformAr
 
     public MinestomPlatform() {
         //todo find newest version
-        super("MINESTOM", "https://nexus.bytemc.de/repository/maven-public/net/bytemc/server/1.6.1/server-1.6.1-all.jar");
+        super("SERVER", "MINESTOM", "https://nexus.bytemc.de/repository/maven-public/net/minestom/bootstrap/1.0.8-SNAPSHOT/bootstrap-1.0.8-SNAPSHOT.jar");
     }
 
 

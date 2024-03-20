@@ -38,6 +38,7 @@ import lombok.*;
 import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.resource.ClusterResource;
 import net.nextcluster.driver.resource.platform.Platform;
+import net.nextcluster.driver.resource.platform.PlatformService;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -94,9 +95,7 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
 
     @Override
     public Platform platform() {
-        //todo
-        // return Platform.valueOf(this.environment().getOrDefault("PLATFORM", "CUSTOM"));
-        return null;
+        return PlatformService.platform(this.environment().getOrDefault("PLATFORM", "CUSTOM"));
     }
 
     @Override
