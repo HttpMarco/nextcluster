@@ -5,6 +5,6 @@ import net.nextcluster.driver.resource.platform.Platform;
 public final class CustomPlatform extends Platform {
 
     public CustomPlatform() {
-        super("custom");
+        super("CUSTOM", "custom");
     }
 }

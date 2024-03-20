@@ -14,18 +14,19 @@ public class PlatformService {
 
     static {
         PLATFORMS.add(new CustomPlatform());
+
         PLATFORMS.add(new PaperPlatform());
-        PLATFORMS.add(new CustomPlatform());
+        PLATFORMS.add(new MinestomPlatform());
+
         PLATFORMS.add(new WaterfallPlatform());
         PLATFORMS.add(new VelocityPlatform());
-        PLATFORMS.add(new MinestomPlatform());
         PLATFORMS.add(new BungeeCordPlatform());
         PLATFORMS.add(new WaterdogPEPlatform());
         PLATFORMS.add(new NukkitPlatform());
     }
 
     public static Platform platform(String id) {
-        return PLATFORMS.stream().filter(it -> it.id().equals(id)).findFirst().orElse(null);
+        return PLATFORMS.stream().filter(it -> it.id().equalsIgnoreCase(id)).findFirst().orElse(null);
     }
 
     public static Platform detect() {

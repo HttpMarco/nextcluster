@@ -10,16 +10,7 @@ import net.nextcluster.driver.resource.platform.impl.CustomPlatform;
 @AllArgsConstructor
 public abstract class Platform {
 
+    private String type;
     private String id;
-
-    public String type() {
-        if (this instanceof ProxyPlatform) {
-            return "PROXY";
-        } else if (this instanceof CustomPlatform) {
-            return "CUSTOM";
-        } else {
-            return "SERVER";
-        }
-    }
 
 }
