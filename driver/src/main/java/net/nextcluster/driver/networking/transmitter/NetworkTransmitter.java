@@ -74,6 +74,8 @@ public abstract class NetworkTransmitter {
 
     public abstract void send(Channel channel, ClusterPacket packet);
 
+    public abstract <T extends ClusterPacket> void forward(T t);
+
     @SuppressWarnings("unchecked")
     public <T extends ClusterPacket> void registerListener(Class<T> searchedClassed, PacketListener<T> listener) {
         listeners.put(searchedClassed, ListUtils.append(listeners.getOrDefault(searchedClassed, new ArrayList<>()), (PacketListener<ClusterPacket>) listener));
