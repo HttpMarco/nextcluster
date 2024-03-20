@@ -33,8 +33,11 @@ import net.nextcluster.driver.networking.packets.PacketListener;
 import net.nextcluster.driver.networking.packets.PacketResponder;
 import net.nextcluster.driver.networking.request.RequestPacket;
 import net.nextcluster.driver.networking.request.ResponderRegistrationPacket;
+import net.nextcluster.driver.resource.player.ClusterPlayer;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 public abstract class NetworkTransmitter {
@@ -45,9 +48,16 @@ public abstract class NetworkTransmitter {
     private final Map<Class<? extends ClusterPacket>, List<PacketListener<ClusterPacket>>> listeners = new HashMap<>();
 
     private final NetworkTransmitterDetector detector;
+    private final AtomicBoolean isServer = new AtomicBoolean();
 
     public NetworkTransmitter() {
         this.detector = new NetworkTransmitterDetector(this);
+
+        try {
+            Class.forName("net.nextcluster.manager.NextClusterManager");
+            this.isServer.set(true);
+        } catch (ClassNotFoundException ignored) {
+        }
     }
 
     public void unregisterChannel(Channel channel) {
@@ -83,7 +93,10 @@ public abstract class NetworkTransmitter {
 
     public <T extends ClusterPacket> void setResponder(String id, PacketResponder<T> responder) {
         this.responders.put(id, responder);
-        this.send(new ResponderRegistrationPacket(id));
+
+        if (!this.isServer()) {
+            this.send(new ResponderRegistrationPacket(id));
+        }
     }
 
     public boolean isRequestPresent(UUID id) {
@@ -106,6 +119,10 @@ public abstract class NetworkTransmitter {
 
     public PacketResponder<?> getResponder(String id) {
         return this.responders.get(id);
+    }
+
+    public boolean isServer() {
+        return this.isServer.get();
     }
 
 }

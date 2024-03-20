@@ -44,17 +44,11 @@ public final class NetworkTransmitterDetector {
     private final Map<Channel, String> respondersByChannel = Maps.newHashMap();
 
     public NetworkTransmitterDetector(NetworkTransmitter transmitter) {
-        AtomicBoolean isServer = new AtomicBoolean();
-
-        try {
-            Class.forName("net.nextcluster.manager.NextClusterManager");
-            isServer.set(true);
-        } catch (ClassNotFoundException ignored) {
-        }
-
         /* SERVER */
         transmitter.registerListener(RequestPacket.class, (channel, packet) -> {
-            if (responders.containsKey(packet.id())) {
+            if (transmitter.isResponderPresent(packet.id())) {
+                channel.writeAndFlush(new RequestResponsePacket(packet.uniqueId(), JsonUtils.toJson(transmitter.getResponder(packet.id()).response(channel, packet.document()))));
+            } else if (responders.containsKey(packet.id())) {
                 this.pending.put(packet.uniqueId(), new PendingRequest(channel, packet.id(), System.currentTimeMillis()));
 
                 var responders = this.responders.get(packet.id());
@@ -93,15 +87,12 @@ public final class NetworkTransmitterDetector {
 
         /* BOTH */
         transmitter.registerListener(RequestResponsePacket.class, (channel, packet) -> {
-            if (isServer.get()) {
+            if (transmitter.isServer()) {
                 if (this.pending.containsKey(packet.uuid())) {
                     this.pending.get(packet.uuid()).channel().writeAndFlush(packet);
                 }
-
-                NextCluster.LOGGER.info("Received response: {}", packet.uuid());
             } else {
                 if (transmitter.isRequestPresent(packet.uuid())) {
-                    NextCluster.LOGGER.info("Received response: {}", packet.uuid());
                     transmitter.acceptRequests(packet.uuid(), packet.packet());
                 }
             }

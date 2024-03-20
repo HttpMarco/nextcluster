@@ -28,10 +28,12 @@ import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
 import net.nextcluster.driver.NextCluster;
+import net.nextcluster.driver.resource.player.ClusterPlayer;
 import net.nextcluster.plugin.NextClusterPlugin;
 import net.nextcluster.plugin.resources.player.ClientClusterPlayerProvider;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class NextClusterProxy extends NextClusterPlugin {
@@ -86,6 +88,8 @@ public abstract class NextClusterProxy extends NextClusterPlugin {
     }
 
     public abstract void registerServer(InternalClusterServer server);
+
+    public abstract ClusterPlayer buildPlayer(UUID uniqueId, String currentProxyName);
 
     private void registerServer0(InternalClusterServer server) {
         NextCluster.LOGGER.info("Server {} successfully connected to the cluster", server.name());
