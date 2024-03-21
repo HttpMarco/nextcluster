@@ -29,7 +29,7 @@ plugins {
 
 subprojects {
     group = "net.nextcluster"
-    version = "1.0.1"
+    version = "1.0.2-SNAPSHOT"
 
     apply(plugin = "java-library")
     apply(plugin = "maven-publish")
