@@ -55,16 +55,7 @@ public class ConfigProvider {
                 config.value(JsonUtils.fromJson(value, config.type()));
             }
         } else {
-            // @formatter:off
-            configMap = new ConfigMapBuilder()
-                    .withNewMetadata()
-                        .withName(config.name())
-                        .withNamespace(NextCluster.instance().kubernetes().getNamespace())
-                    .endMetadata()
-                    .withData(Map.of("value", JsonUtils.toPrettyJson(config.value())))
-                    .build();
-            // @formatter:on
-            NextCluster.instance().kubernetes().configMaps().resource(configMap).serverSideApply();
+            config.value(config.value());
         }
 
         if (this.watch == null && config.hasProperty(ConfigProperty.OBSERVE)) {
