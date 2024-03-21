@@ -55,6 +55,7 @@ public class ConfigProvider {
                 config.value(JsonUtils.fromJson(value, config.type()));
             }
         } else {
+            NextCluster.LOGGER.info("{} does not exist, creating...", config.name());
             config.value(config.value());
         }
 
