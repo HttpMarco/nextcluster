@@ -87,8 +87,7 @@ public class PreVM extends NextCluster {
 
         transmitter().registerListener(ClusterEventCallPacket.class, (channel, packet) -> {
             try {
-                NextCluster.instance().eventRegistry().callLocal(JsonUtils.fromJson(packet.event(), (Class<? extends ClusterEvent>) Class.forName(packet.eventClass())));
-                System.out.println("called local");
+                NextCluster.instance().eventRegistry().callLocal(JsonUtils.fromJson(packet.json(), (Class<? extends ClusterEvent>) Class.forName(packet.eventClass())));
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }
