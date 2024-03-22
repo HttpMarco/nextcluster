@@ -27,7 +27,6 @@ package net.nextcluster.manager.networking;
 import io.netty5.channel.Channel;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.networking.packets.ClusterPacket;
 import net.nextcluster.driver.networking.transmitter.NetworkTransmitter;
 
@@ -50,6 +49,11 @@ public class NettyServerTransmitter extends NetworkTransmitter {
     @Override
     public void send(Channel channel, ClusterPacket packet) {
         channel.writeAndFlush(packet);
+    }
+
+    @Override
+    public <T extends ClusterPacket> void forward(T t) {
+        send(t);
     }
 
     public void sendAllAndIgnoreSelf(Channel incomingChannel, ClusterPacket packet) {

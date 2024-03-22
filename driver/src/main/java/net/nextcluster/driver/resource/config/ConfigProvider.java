@@ -26,6 +26,7 @@ package net.nextcluster.driver.resource.config;
 
 import dev.httpmarco.osgan.files.json.JsonUtils;
 import io.fabric8.kubernetes.api.model.ConfigMap;
+import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
@@ -46,12 +47,16 @@ public class ConfigProvider {
     public <T> NextConfig<T> register(NextConfig<T> config) {
         CONFIGS.put(config.name(), config);
 
-        final var configMap = NextCluster.instance().kubernetes().configMaps().withName(config.name()).get();
+        var configMap = NextCluster.instance().kubernetes().configMaps().withName(config.name()).get();
+
         if (configMap != null) {
             final var value = configMap.getData().get("value");
             if (value != null) {
                 config.value(JsonUtils.fromJson(value, config.type()));
             }
+        } else {
+            NextCluster.LOGGER.info("{} does not exist, creating...", config.name());
+            config.value(config.value());
         }
 
         if (this.watch == null && config.hasProperty(ConfigProperty.OBSERVE)) {

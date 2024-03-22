@@ -29,6 +29,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.networking.packets.ClusterPacket;
+import net.nextcluster.driver.networking.packets.ForwardPacket;
 import net.nextcluster.driver.networking.transmitter.NetworkTransmitter;
 import org.jetbrains.annotations.Nullable;
 
@@ -50,5 +51,10 @@ public class NettyClientTransmitter extends NetworkTransmitter {
         } else {
             NextCluster.LOGGER.warn("Channel is not active, cannot send packet: " + packet.getClass().getSimpleName());
         }
+    }
+
+    @Override
+    public <T extends ClusterPacket> void forward(T t) {
+        this.send(this.channel, new ForwardPacket(t));
     }
 }

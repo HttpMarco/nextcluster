@@ -26,6 +26,7 @@ package net.nextcluster.driver.networking.transmitter;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import dev.httpmarco.osgan.files.json.JsonUtils;
 import dev.httpmarco.osgan.utils.RandomUtils;
 import io.netty5.channel.Channel;
 import net.nextcluster.driver.NextCluster;
@@ -34,6 +35,7 @@ import net.nextcluster.driver.networking.request.*;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class NetworkTransmitterDetector {
 
@@ -44,13 +46,15 @@ public final class NetworkTransmitterDetector {
     public NetworkTransmitterDetector(NetworkTransmitter transmitter) {
         /* SERVER */
         transmitter.registerListener(RequestPacket.class, (channel, packet) -> {
-            if (responders.containsKey(packet.id())) {
+            if (transmitter.isResponderPresent(packet.id())) {
+                channel.writeAndFlush(new RequestResponsePacket(packet.uniqueId(), JsonUtils.toJson(transmitter.getResponder(packet.id()).response(channel, packet.document()))));
+            } else if (responders.containsKey(packet.id())) {
                 this.pending.put(packet.uniqueId(), new PendingRequest(channel, packet.id(), System.currentTimeMillis()));
 
                 var responders = this.responders.get(packet.id());
                 var rndm = RandomUtils.getRandomNumber(responders.size());
 
-                transmitter.send(channel, new RequestForwardPacket(rndm, packet.id(), packet.uniqueId(), packet.document()));
+                transmitter.send(responders.get(rndm), new RequestForwardPacket(rndm, packet.id(), packet.uniqueId(), packet.document()));
 
                 NextCluster.LOGGER.info("Request received: " + packet.id() + " - responder: " + rndm + " - properties: " + packet.document());
             } else {
@@ -75,14 +79,22 @@ public final class NetworkTransmitterDetector {
                 transmitter.removeRequest(packet.uniqueId());
             }
         });
-        transmitter.registerListener(RequestResponsePacket.class, (channel, packet) -> {
-            if (transmitter.isRequestPresent(packet.uuid())) {
-                transmitter.acceptRequests(packet.uuid(), packet.packet());
-            }
-        });
         transmitter.registerListener(RequestForwardPacket.class, (channel, packet) -> {
             if (transmitter.isResponderPresent(packet.id())) {
-                channel.writeAndFlush(new RequestResponsePacket(packet.uniqueId(), transmitter.getResponder(packet.id()).response(channel, packet.document())));
+                channel.writeAndFlush(new RequestResponsePacket(packet.uniqueId(), JsonUtils.toJson(transmitter.getResponder(packet.id()).response(channel, packet.document()))));
+            }
+        });
+
+        /* BOTH */
+        transmitter.registerListener(RequestResponsePacket.class, (channel, packet) -> {
+            if (transmitter.isServer()) {
+                if (this.pending.containsKey(packet.uuid())) {
+                    this.pending.get(packet.uuid()).channel().writeAndFlush(packet);
+                }
+            } else {
+                if (transmitter.isRequestPresent(packet.uuid())) {
+                    transmitter.acceptRequests(packet.uuid(), packet.packet());
+                }
             }
         });
     }

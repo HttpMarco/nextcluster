@@ -5,21 +5,21 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import dev.httpmarco.osgan.files.annotations.ConfigExclude;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
+import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.resource.player.AbstractClusterPlayer;
+import net.nextcluster.driver.resource.player.DefaultClusterPlayer;
+import net.nextcluster.plugin.NextClusterPlugin;
 
 import java.time.Duration;
 
-public class VelocityClusterPlayer extends AbstractClusterPlayer {
+public class VelocityClusterPlayer extends DefaultClusterPlayer {
 
     @ConfigExclude
     private final Player player;
-    @ConfigExclude
-    private final ProxyServer proxyServer;
 
-    public VelocityClusterPlayer(ProxyServer server, Player player) {
-        super(player.getUsername(), player.getUniqueId(), System.getenv("HOSTNAME"), null);
+    public VelocityClusterPlayer(Player player) {
+        super(player.getUsername(), player.getUniqueId(), System.getenv("HOSTNAME"), "");
         this.player = player;
-        this.proxyServer = server;
     }
 
     @Override
@@ -47,6 +47,6 @@ public class VelocityClusterPlayer extends AbstractClusterPlayer {
 
     @Override
     public void connectToServer(String serverName) {
-        proxyServer.getServer(serverName).ifPresent(registeredServer -> this.player.createConnectionRequest(registeredServer).connect());
+        ((NextClusterVelocity) NextClusterPlugin.instance()).getServer().getServer(serverName).ifPresent(registeredServer -> this.player.createConnectionRequest(registeredServer).connect());
     }
 }

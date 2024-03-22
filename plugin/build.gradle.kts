@@ -40,6 +40,11 @@ repositories {
         name = "opencollab-repo-snapshot"
         url = uri("https://repo.opencollab.dev/maven-snapshots")
     }
+    //minestom
+    maven {
+        name = "minestom-repo-snapshot"
+        url = uri("https://nexus.bytemc.de/repository/maven-public/")
+    }
 }
 
 dependencies {
@@ -51,10 +56,12 @@ dependencies {
     compileOnly("com.velocitypowered:velocity-api:3.3.0-SNAPSHOT")
     annotationProcessor("com.velocitypowered:velocity-api:3.3.0-SNAPSHOT")
     compileOnly("net.md-5:bungeecord-api:1.20-R0.2")
+    compileOnly("net.md-5:bungeecord-api:1.20-R0.2")
     compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
-    implementation("dev.waterdog.waterdogpe:waterdog:2.0.2-SNAPSHOT")
+    compileOnly("net.minestom:common:1.0.0-20240318.151340-1")
+    compileOnly("dev.waterdog.waterdogpe:waterdog:2.0.2-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bungeecord:4.3.2")
-    implementation("cn.nukkit:nukkit:1.0-SNAPSHOT")
+    compileOnly("cn.nukkit:nukkit:1.0-SNAPSHOT")
     implementation(libs.spark)
 }
 
@@ -66,7 +73,7 @@ tasks.withType<Jar> {
     plugin.writeText(
         """
         name: NextCluster
-        author: HabsGleich
+        author: NextCluster
         version: %s
         main: net.nextcluster.plugin.server.spigot.SpigotClusterPlugin
     """.trimIndent().format(project.version))
