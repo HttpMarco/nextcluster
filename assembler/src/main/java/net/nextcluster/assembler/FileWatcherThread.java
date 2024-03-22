@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import static net.nextcluster.driver.NextCluster.LOGGER;
 
@@ -98,7 +99,7 @@ public class FileWatcherThread extends Thread {
                     CommandLineTask.run("docker push " + image);
                     LOGGER.info("Image {} built and pushed successfully", image);
 
-                    if(metadata.isRestartAfterBuild()) {
+                    if (metadata.isRestartAfterBuild()) {
                         LOGGER.info("Restart all pods with image {}.", image);
                         NextCluster.instance().groupProvider().groups().stream().filter(it -> it.image().equalsIgnoreCase(image)).forEach(ClusterGroup::shutdown);
                     }
@@ -142,21 +143,18 @@ public class FileWatcherThread extends Thread {
         }
     }
 
-    @SneakyThrows
     private boolean isChanged(Path path, long lastCheck) {
-        var children = path.toFile().listFiles();
-        if (children == null) {
-            return false;
+        try (Stream<Path> paths = Files.walk(path)) {
+            return paths.filter(p -> !Files.isDirectory(p))
+                    .anyMatch(p -> {
+                        try {
+                            return Files.getLastModifiedTime(p).toMillis() > lastCheck;
+                        } catch (IOException e) {
+                            return false; // Suppress IOException
+                        }
+                    });
+        } catch (IOException e) {
+            return false; // Suppress IOException
         }
-        for (var child : children) {
-            if (child.isDirectory() && this.isChanged(child.toPath(), lastCheck)) {
-                return true;
-            } else if (!child.isDirectory()) {
-                if (lastCheck < child.lastModified()) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 }

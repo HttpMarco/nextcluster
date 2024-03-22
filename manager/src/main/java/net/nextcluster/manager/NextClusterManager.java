@@ -43,15 +43,18 @@ import java.util.function.Supplier;
 public class NextClusterManager extends NextCluster {
 
     public static final Supplier<String> STATIC_SERVICES_PATH = () ->
-        "/srv/nextcluster/%s/static".formatted(NextCluster.instance().kubernetes().getNamespace());
+            "/srv/nextcluster/%s/static".formatted(NextCluster.instance().kubernetes().getNamespace());
 
     protected NextClusterManager() {
         // register communication transmitter (priority)
         super(new NettyServerTransmitter());
 
         // initialize netty server
-        var nettyServer = new NettyServer();
-        nettyServer.initialize(NetworkUtils.NETTY_PORT);
+        try (NettyServer nettyServer = new NettyServer()) {
+            nettyServer.initialize(NetworkUtils.NETTY_PORT);
+        } catch (Exception e) {
+            LOGGER.error("Failed to initialize NettyServer!", e);
+        }
 
         // wait for the transmitter to be ready
         playerProvider(new ManagerCloudPlayerProvider(this.transmitter()));
@@ -60,19 +63,19 @@ public class NextClusterManager extends NextCluster {
     public static void main(String[] args) {
         long startup = System.currentTimeMillis();
         new SpringApplicationBuilder(NextClusterManager.class)
-            .bannerMode(Banner.Mode.OFF)
-            .run(args);
+                .bannerMode(Banner.Mode.OFF)
+                .run(args);
 
         var client = NextCluster.instance().kubernetes();
 
         LOGGER.info("Applying custom resources...");
         Initializer.initialize(client);
         client.apiextensions()
-            .v1()
-            .customResourceDefinitions()
-            .load(ClassLoader.getSystemClassLoader().getResourceAsStream("models/nextgroup.yml"))
-            .forceConflicts()
-            .serverSideApply();
+                .v1()
+                .customResourceDefinitions()
+                .load(ClassLoader.getSystemClassLoader().getResourceAsStream("models/nextgroup.yml"))
+                .forceConflicts()
+                .serverSideApply();
         LOGGER.info("Custom resources successfully applied!");
         client.resources(NextGroup.class).inform(new NextGroupWatcher());
         LOGGER.info("NextClusterManager started in {}ms!", System.currentTimeMillis() - startup);
