@@ -25,12 +25,13 @@
 package net.nextcluster.plugin.rest;
 
 import dev.httpmarco.osgan.files.json.JsonUtils;
-import lombok.experimental.UtilityClass;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.nextcluster.driver.NextCluster;
 import net.nextcluster.plugin.NextClusterPlugin;
 import spark.Spark;
 
-@UtilityClass
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class RestServer {
 
     private static final Integer REST_PORT = Integer.parseInt(System.getProperty("rest.port", "8080"));
