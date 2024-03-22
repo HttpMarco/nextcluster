@@ -25,13 +25,12 @@
 package net.nextcluster.driver.utils;
 
 import com.sun.management.OperatingSystemMXBean;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import lombok.experimental.UtilityClass;
 
 import java.lang.management.ManagementFactory;
 import java.text.DecimalFormat;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@UtilityClass
 public final class SystemUtils {
 
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.00");
@@ -43,9 +42,8 @@ public final class SystemUtils {
 
     public static long memoryUsage() {
         final var runtime = Runtime.getRuntime();
-        final var maxMemory = runtime.maxMemory() / (1024 * 1024);
-        final var freeMemory = runtime.freeMemory() / (1024 * 1024);
-        return maxMemory - freeMemory;
+        final var maxMemory = runtime.maxMemory() / (1024 ^ 2);
+        final var freeMemory = runtime.freeMemory() / (1024 ^ 2);
+        return (maxMemory) - freeMemory;
     }
-
 }

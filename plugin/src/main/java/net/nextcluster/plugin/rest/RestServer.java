@@ -25,13 +25,12 @@
 package net.nextcluster.plugin.rest;
 
 import dev.httpmarco.osgan.files.json.JsonUtils;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import lombok.experimental.UtilityClass;
 import net.nextcluster.driver.NextCluster;
 import net.nextcluster.plugin.NextClusterPlugin;
 import spark.Spark;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@UtilityClass
 public final class RestServer {
 
     private static final Integer REST_PORT = Integer.parseInt(System.getProperty("rest.port", "8080"));
@@ -41,8 +40,8 @@ public final class RestServer {
 
         Spark.port(REST_PORT);
         Spark.get(
-            "/information",
-            (request, response) -> JsonUtils.toPrettyJson(NextClusterPlugin.instance().currentInformation())
+                "/information",
+                (request, response) -> JsonUtils.toPrettyJson(NextClusterPlugin.instance().currentInformation())
         );
         Spark.post("/execute", (request, response) -> {
             NextCluster.LOGGER.info("Execute command: '{}'...", request.body());

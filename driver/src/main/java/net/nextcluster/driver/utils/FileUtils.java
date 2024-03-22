@@ -24,20 +24,18 @@
 
 package net.nextcluster.driver.utils;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.experimental.UtilityClass;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Objects;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@UtilityClass
 public final class FileUtils {
 
     @SneakyThrows
@@ -64,14 +62,11 @@ public final class FileUtils {
         }
     }
 
-    @SneakyThrows
     public static void copyInternal(String internal, String destination) {
         copyInternal(internal, destination, false);
     }
 
-    @SneakyThrows
     public static void copyInternalOverride(String internal, String destination) {
         copyInternal(internal, destination, true);
     }
-
 }
