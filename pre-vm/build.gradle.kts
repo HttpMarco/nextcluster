@@ -32,7 +32,7 @@ dependencies {
     implementation(libs.bundles.logger)
 
     // we this for paper logging
-    implementation("com.lmax:disruptor:4.0.0")
+    implementation("com.lmax:disruptor:3.4.4")
 }
 
 tasks.shadowJar {
