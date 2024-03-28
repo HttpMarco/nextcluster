@@ -1,5 +1,5 @@
 name: NextCluster
-version: 1.0.0
+version: 1.0.3-SNAPSHOT
 author: nextCluster
 main: net.nextcluster.plugin.proxy.bungeecord.NextClusterBungeeCord
 command:

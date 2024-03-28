@@ -24,7 +24,7 @@
 
 package net.nextcluster.driver.resource.player;
 
-import dev.httpmarco.osgan.utils.executers.ThreadAsyncExecutor;
+import dev.httpmarco.osgan.utils.executers.FutureResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,35 +33,35 @@ import java.util.UUID;
 
 public interface PlayerProvider {
 
-    ThreadAsyncExecutor<List<ClusterPlayer>> playersAsync();
+    FutureResult<List<ClusterPlayer>> playersAsync();
 
     default List<ClusterPlayer> players() {
-        return this.playersAsync().sync(new ArrayList<>());
+        return this.playersAsync().sync(new ArrayList<>(), 5);
     }
 
     default Optional<ClusterPlayer> player(UUID uniqueId) {
-        return this.playerAsync(uniqueId).sync(Optional.empty());
+        return this.playerAsync(uniqueId).sync(Optional.empty(), 5);
     }
 
-    ThreadAsyncExecutor<Optional<ClusterPlayer>> playerAsync(UUID uniqueId);
+    FutureResult<Optional<ClusterPlayer>> playerAsync(UUID uniqueId);
 
     default Optional<ClusterPlayer> player(String name) {
-        return this.playerAsync(name).sync(Optional.empty());
+        return this.playerAsync(name).sync(Optional.empty(), 5);
     }
 
-    ThreadAsyncExecutor<Optional<ClusterPlayer>> playerAsync(String name);
+    FutureResult<Optional<ClusterPlayer>> playerAsync(String name);
 
     default boolean isOnline(String username) {
-        return this.isOnlineAsync(username).sync(false);
+        return this.isOnlineAsync(username).sync(false, 5);
     }
 
-    ThreadAsyncExecutor<Boolean> isOnlineAsync(String username);
+    FutureResult<Boolean> isOnlineAsync(String username);
 
     default boolean isOnline(UUID uniqueId) {
-        return this.isOnlineAsync(uniqueId).sync(false);
+        return this.isOnlineAsync(uniqueId).sync(false, 5);
     }
 
-    ThreadAsyncExecutor<Boolean> isOnlineAsync(UUID uniqueId);
+    FutureResult<Boolean> isOnlineAsync(UUID uniqueId);
 
     ClusterPlayer createPlayer(String name, UUID uniqueId, String currentProxyName, String currentServerName);
 

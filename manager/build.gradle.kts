@@ -34,13 +34,13 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":driver"))
-    implementation("io.jsonwebtoken:jjwt:0.12.5")
+    api(project(":driver"))
+    api("io.jsonwebtoken:jjwt:0.12.5")
 
     implementation("org.springframework.boot:spring-boot-starter-web") {
         exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
     }
-    implementation("org.springframework.boot:spring-boot-starter-security")
+    api("org.springframework.boot:spring-boot-starter-security")
     annotationProcessor(libs.crd)
 
     testImplementation(project(":driver"))

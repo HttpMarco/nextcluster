@@ -10,7 +10,7 @@ import net.nextcluster.driver.resource.player.ClusterPlayer;
 @Getter
 @Accessors(fluent = true)
 @AllArgsConstructor
-public final class ClusterPlayerConnectPacket implements Packet {
-     @PacketIncludeObject
-     private ClusterPlayer clusterPlayer;
+public class ClusterPlayerPacket implements Packet {
+    @PacketIncludeObject
+    private ClusterPlayer clusterPlayer;
 }

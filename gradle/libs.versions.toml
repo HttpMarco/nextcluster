@@ -7,7 +7,7 @@ gson = "2.10.1"
 #utils
 lombok = "1.18.32"
 annotations = "24.1.0"
-osgan = "1.0.28-SNAPSHOT"
+osgan = "1.0.37-SNAPSHOT"
 spark = "2.9.4"
 minimessage = "4.16.0"
 
@@ -33,6 +33,7 @@ annotations = { group = "org.jetbrains", name = "annotations", version.ref = "an
 osgan-utils = { group = "dev.httpmarco", name = "osgan-utils", version.ref = "osgan" }
 osgan-reflections = { group = "dev.httpmarco", name = "osgan-reflections", version.ref = "osgan" }
 osgan-files = { group = "dev.httpmarco", name = "osgan-files", version.ref = "osgan" }
+osgan-netty = { group = "dev.httpmarco", name = "osgan-netty", version.ref = "osgan" }
 minimessage = { group = "net.kyori", name = "adventure-text-minimessage", version.ref = "minimessage" }
 
 #logging
@@ -46,5 +47,5 @@ netty5 = { group = "io.netty", name = "netty5-all", version.ref = "netty5" }
 shadow = { id = "com.github.johnrengelman.shadow", version = "8.1.1" }
 
 [bundles]
-osgan = ["osgan-utils", "osgan-reflections", "osgan-files"]
+osgan = ["osgan-utils", "osgan-reflections", "osgan-files", "osgan-netty"]
 logger = ["slf4j", "log4j"]

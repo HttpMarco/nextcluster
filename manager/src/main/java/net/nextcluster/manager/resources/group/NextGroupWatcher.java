@@ -81,7 +81,7 @@ public class NextGroupWatcher implements ResourceEventHandler<NextGroup> {
                 "/data"
             ));
 
-            final Path staticDir = Path.of("/static/" + group.name());
+            final Path staticDir = Path.of(NextClusterManager.STATIC_SERVICES_PATH.get() + "/" + group.name());
             if (Files.notExists(staticDir)) {
                 Files.createDirectories(staticDir);
             }

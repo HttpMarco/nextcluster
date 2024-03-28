@@ -40,7 +40,7 @@ public class MinestomPlugin extends Plugin {
 
         @Override
         public void dispatchCommand(String command) {
-            //todo
+            MinecraftServer.getCommandManager().executeServerCommand(command);
         }
     }
 

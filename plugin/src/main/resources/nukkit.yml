@@ -1,5 +1,5 @@
 name: NextCluster
 author: NextCluster
-version: 1.0.0-SNAPSHOT
+version: 1.0.3-SNAPSHOT
 main: net.nextcluster.plugin.server.nukkit.NukkitClusterPlugin
 api: 1.0.0
