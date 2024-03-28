@@ -10,7 +10,7 @@ import net.nextcluster.driver.resource.platform.impl.CustomPlatform;
 @AllArgsConstructor
 public abstract class Platform {
 
-    private String type;
+    private PlatformType type;
     private String id;
 
 }

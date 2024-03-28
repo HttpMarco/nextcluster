@@ -3,6 +3,7 @@ package net.nextcluster.driver.resource.platform.impl;
 import net.nextcluster.driver.resource.platform.DownloadablePlatform;
 import net.nextcluster.driver.resource.platform.Platform;
 import net.nextcluster.driver.resource.platform.PlatformArgs;
+import net.nextcluster.driver.resource.platform.PlatformType;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ public class MinestomPlatform extends DownloadablePlatform implements PlatformAr
 
     public MinestomPlatform() {
         //todo find newest version
-        super("SERVER", "MINESTOM", "https://nexus.bytemc.de/repository/maven-public/net/minestom/bootstrap/1.0.8-SNAPSHOT/bootstrap-1.0.8-SNAPSHOT.jar");
+        super(PlatformType.SERVER, "MINESTOM", "https://nexus.bytemc.de/repository/maven-public/net/minestom/bootstrap/1.0.8-SNAPSHOT/bootstrap-1.0.8-SNAPSHOT.jar");
     }
 
 

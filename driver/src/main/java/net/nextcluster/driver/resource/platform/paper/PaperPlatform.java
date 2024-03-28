@@ -1,12 +1,13 @@
 package net.nextcluster.driver.resource.platform.paper;
 
 import net.nextcluster.driver.resource.platform.PaperMcPlatform;
+import net.nextcluster.driver.resource.platform.PlatformType;
 import net.nextcluster.driver.resource.platform.VersionalPlatform;
 
 public class PaperPlatform extends PaperMcPlatform implements VersionalPlatform {
 
     public PaperPlatform() {
-        super("SERVER", "paper");
+        super(PlatformType.SERVER, "paper");
     }
 
     @Override

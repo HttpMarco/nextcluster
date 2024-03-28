@@ -111,7 +111,7 @@ public class NextGroupWatcher implements ResourceEventHandler<NextGroup> {
                         .addToLabels("nextcluster", "true")
                         .addToLabels("nextcluster/group", group.name())
                         .addToLabels("nextcluster/fallback", Boolean.toString(group.isFallback()))
-                        .addToLabels("nextcluster/type", group.platform().type())
+                        .addToLabels("nextcluster/type", group.platform().type().name())
                         .addToLabels("nextcluster/static", Boolean.toString(group.isStatic()))
                     .endMetadata()
                     .withNewSpec()

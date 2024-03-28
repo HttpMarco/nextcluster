@@ -16,7 +16,7 @@ public class PaperMcPlatform extends DownloadablePlatform {
     private static final String LATEST_BUILDNUMBER_URL = "https://papermc.io/api/v2/projects/%s/versions/%s";
     public static final String DOWNLOAD_URL = "https://api.papermc.io/v2/projects/%s/versions/%s/builds/%s/downloads/%s-%s-%s.jar";
 
-    public PaperMcPlatform(String type, String id) {
+    public PaperMcPlatform(PlatformType type, String id) {
         super(type, id, null);
     }
 
