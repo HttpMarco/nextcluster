@@ -3,15 +3,19 @@ package net.nextcluster.plugin.proxy.waterdogpe;
 import dev.httpmarco.osgan.utils.data.Pair;
 
 import dev.waterdog.waterdogpe.ProxyServer;
+import dev.waterdog.waterdogpe.WaterdogPE;
 import dev.waterdog.waterdogpe.network.serverinfo.BedrockServerInfo;
 import dev.waterdog.waterdogpe.network.serverinfo.ServerInfo;
+import net.nextcluster.driver.resource.player.ClusterPlayer;
 import net.nextcluster.driver.resource.service.ServiceInformation;
 import net.nextcluster.plugin.proxy.InternalClusterServer;
 import net.nextcluster.plugin.proxy.NextClusterProxy;
+import net.nextcluster.plugin.proxy.bungeecord.BungeeCordClusterPlayer;
 import net.nextcluster.plugin.proxy.waterdogpe.command.WaterdogPEClusterCommand;
 
 import java.net.InetSocketAddress;
 import java.util.Optional;
+import java.util.UUID;
 
 public final class WaterdogPEProxy extends NextClusterProxy {
 
@@ -27,6 +31,11 @@ public final class WaterdogPEProxy extends NextClusterProxy {
                 new InetSocketAddress(server.ip(), 19132)
         );
         ProxyServer.getInstance().registerServerInfo(info);
+    }
+
+    @Override
+    public ClusterPlayer buildPlayer(UUID uniqueId, String currentProxyName) {
+        return new WaterdogPEClusterPlayer(ProxyServer.getInstance().getPlayer(uniqueId), currentProxyName);
     }
 
     @Override

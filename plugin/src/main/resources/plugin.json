@@ -1,0 +1,7 @@
+{
+  "name": "NextCluster",
+  "version": "1.0.0",
+  "author": "nextCluster",
+  "mainClass": "net.nextcluster.plugin.server.minestom.MinestomPlugin",
+  "depends": []
+}

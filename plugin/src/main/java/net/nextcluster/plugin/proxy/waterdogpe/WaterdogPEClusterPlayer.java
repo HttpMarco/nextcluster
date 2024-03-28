@@ -4,8 +4,9 @@ import dev.httpmarco.osgan.files.annotations.ConfigExclude;
 import dev.waterdog.waterdogpe.ProxyServer;
 import dev.waterdog.waterdogpe.player.ProxiedPlayer;
 import net.nextcluster.driver.resource.player.AbstractClusterPlayer;
+import net.nextcluster.driver.resource.player.DefaultClusterPlayer;
 
-public final class WaterdogPEClusterPlayer extends AbstractClusterPlayer {
+public final class WaterdogPEClusterPlayer extends DefaultClusterPlayer {
 
     @ConfigExclude
     private final ProxiedPlayer player;

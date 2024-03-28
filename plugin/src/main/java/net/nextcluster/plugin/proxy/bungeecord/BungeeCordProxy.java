@@ -4,6 +4,7 @@ import dev.httpmarco.osgan.utils.data.Pair;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.plugin.Plugin;
+import net.nextcluster.driver.resource.player.ClusterPlayer;
 import net.nextcluster.driver.resource.service.ServiceInformation;
 import net.nextcluster.plugin.proxy.InternalClusterServer;
 import net.nextcluster.plugin.proxy.NextClusterProxy;
@@ -11,6 +12,7 @@ import net.nextcluster.plugin.proxy.bungeecord.command.BungeeCordClusterCommand;
 
 import java.net.InetSocketAddress;
 import java.util.Optional;
+import java.util.UUID;
 
 public final class BungeeCordProxy extends NextClusterProxy {
 
@@ -27,6 +29,11 @@ public final class BungeeCordProxy extends NextClusterProxy {
                 false
         );
         ProxyServer.getInstance().getServers().put(server.name(), info);
+    }
+
+    @Override
+    public ClusterPlayer buildPlayer(UUID uniqueId, String currentProxyName) {
+        return new BungeeCordClusterPlayer(ProxyServer.getInstance().getPlayer(uniqueId), currentProxyName);
     }
 
     @Override

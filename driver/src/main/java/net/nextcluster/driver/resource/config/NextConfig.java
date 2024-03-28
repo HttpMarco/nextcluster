@@ -78,7 +78,7 @@ public final class NextConfig<T> {
                 .withData(Map.of("value", JsonUtils.toPrettyJson(value)))
                 .build();
             // @formatter:on
-            NextCluster.instance().kubernetes().configMaps().resource(configMap).forceConflicts();
+            NextCluster.instance().kubernetes().configMaps().resource(configMap).forceConflicts().serverSideApply();
         }
     }
 

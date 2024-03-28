@@ -24,12 +24,15 @@
 
 package net.nextcluster.prevm;
 
+import dev.httpmarco.osgan.files.json.JsonUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import net.nextcluster.driver.NextCluster;
+import net.nextcluster.driver.event.ClusterEvent;
+import net.nextcluster.driver.event.ClusterEventCallPacket;
 import net.nextcluster.driver.networking.NetworkUtils;
 import net.nextcluster.driver.resource.platform.DownloadablePlatform;
 import net.nextcluster.driver.resource.platform.Platform;
@@ -81,6 +84,14 @@ public class PreVM extends NextCluster {
         } else {
             NextCluster.LOGGER.error("Could not find a manager pod! Netty will not work.");
         }
+
+        transmitter().registerListener(ClusterEventCallPacket.class, (channel, packet) -> {
+            try {
+                NextCluster.instance().eventRegistry().callLocal(JsonUtils.fromJson(packet.json(), (Class<? extends ClusterEvent>) Class.forName(packet.eventClass())));
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     public static void premain(String args, Instrumentation instrumentation) {

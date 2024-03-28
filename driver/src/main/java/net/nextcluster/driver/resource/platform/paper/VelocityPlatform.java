@@ -6,6 +6,6 @@ import net.nextcluster.driver.resource.platform.ProxyPlatform;
 public class VelocityPlatform extends PaperMcPlatform implements ProxyPlatform {
 
     public VelocityPlatform() {
-        super("velocity");
+        super("PROXY", "velocity");
     }
 }

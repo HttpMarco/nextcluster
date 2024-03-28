@@ -41,8 +41,8 @@ public final class RestServer {
 
         Spark.port(REST_PORT);
         Spark.get(
-            "/information",
-            (request, response) -> JsonUtils.toPrettyJson(NextClusterPlugin.instance().currentInformation())
+                "/information",
+                (request, response) -> JsonUtils.toPrettyJson(NextClusterPlugin.instance().currentInformation())
         );
         Spark.post("/execute", (request, response) -> {
             NextCluster.LOGGER.info("Execute command: '{}'...", request.body());

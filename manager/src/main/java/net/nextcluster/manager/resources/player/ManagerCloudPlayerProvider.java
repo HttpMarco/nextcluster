@@ -3,9 +3,12 @@ package net.nextcluster.manager.resources.player;
 import dev.httpmarco.osgan.utils.executers.ThreadAsyncExecutor;
 import net.nextcluster.driver.networking.transmitter.NetworkTransmitter;
 import net.nextcluster.driver.resource.player.ClusterPlayer;
+import net.nextcluster.driver.resource.player.DefaultClusterPlayer;
 import net.nextcluster.driver.resource.player.PlayerProvider;
+import net.nextcluster.driver.resource.player.packets.AbstractClusterPlayerPacket;
 import net.nextcluster.driver.resource.player.packets.ClusterPlayerConnectPacket;
 import net.nextcluster.driver.resource.player.packets.ClusterPlayerDisconnectPacket;
+import net.nextcluster.driver.resource.player.packets.ClusterPlayerResponsePacket;
 
 import java.util.*;
 
@@ -14,8 +17,30 @@ public final class ManagerCloudPlayerProvider implements PlayerProvider {
     private final Map<UUID, ClusterPlayer> players = new HashMap<>();
 
     public ManagerCloudPlayerProvider(NetworkTransmitter transmitter) {
-        transmitter.registerListener(ClusterPlayerConnectPacket.class, (channel, it) -> this.players.put(it.clusterPlayer().uniqueId(), it.clusterPlayer()));
+        transmitter.registerListener(ClusterPlayerConnectPacket.class, (channel, it) -> {
+            var player = it.clusterPlayer();
+            this.players.put(player.uniqueId(), player);
+        });
         transmitter.registerListener(ClusterPlayerDisconnectPacket.class, (channel, it) -> this.players.remove(it.uniqueId()));
+
+        transmitter.setResponder("nextcluster_users_fetch", (channel, props) -> {
+            if (props.has("uuid")) {
+                return new AbstractClusterPlayerPacket(this.player(props.readObject("uuid", UUID.class)).orElseThrow());
+            } else if (props.has("username")) {
+                return new AbstractClusterPlayerPacket(this.player(props.readString("username")).orElseThrow());
+            }
+
+            return new AbstractClusterPlayerPacket((ClusterPlayer) null);
+        });
+        transmitter.setResponder("nextcluster_users_online", (channel, props) -> {
+            if (props.has("uuid")) {
+                return new ClusterPlayerResponsePacket(this.players.containsKey(props.readObject("uuid", UUID.class)));
+            } else if (props.has("username")) {
+                return new ClusterPlayerResponsePacket(this.players.values().stream().anyMatch(clusterPlayer -> clusterPlayer.name().equals(props.readString("username"))));
+            }
+
+            return new ClusterPlayerResponsePacket(false);
+        });
     }
 
     @Override
@@ -55,6 +80,6 @@ public final class ManagerCloudPlayerProvider implements PlayerProvider {
 
     @Override
     public ClusterPlayer createPlayer(String name, UUID uniqueId, String currentProxyName, String currentServerName) {
-        return null;
+        return new DefaultClusterPlayer(name, uniqueId, currentProxyName, currentServerName);
     }
 }

@@ -6,7 +6,7 @@ import net.nextcluster.driver.resource.platform.ProxyPlatform;
 public class WaterfallPlatform extends PaperMcPlatform implements ProxyPlatform {
 
     public WaterfallPlatform() {
-        super("waterfall");
+        super("PROXY", "waterfall");
     }
 
 
