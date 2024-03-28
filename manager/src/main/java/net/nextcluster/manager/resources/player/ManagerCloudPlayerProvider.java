@@ -1,6 +1,7 @@
 package net.nextcluster.manager.resources.player;
 
-import dev.httpmarco.osgan.utils.executers.ThreadAsyncExecutor;
+import dev.httpmarco.osgan.utils.executers.FutureResult;
+import dev.httpmarco.osgan.utils.executers.ThreadExecutor;
 import net.nextcluster.driver.networking.transmitter.NetworkTransmitter;
 import net.nextcluster.driver.resource.player.ClusterPlayer;
 import net.nextcluster.driver.resource.player.DefaultClusterPlayer;
@@ -44,36 +45,36 @@ public final class ManagerCloudPlayerProvider implements PlayerProvider {
     }
 
     @Override
-    public ThreadAsyncExecutor<List<ClusterPlayer>> playersAsync() {
-        var executor = new ThreadAsyncExecutor<List<ClusterPlayer>>();
-        executor.complete(players.values().stream().toList());
-        return executor;
+    public FutureResult<List<ClusterPlayer>> playersAsync() {
+        FutureResult<List<ClusterPlayer>> result = new FutureResult<>();
+        result.complete(new ArrayList<>(players.values()));
+        return result;
     }
 
     @Override
-    public ThreadAsyncExecutor<Optional<ClusterPlayer>> playerAsync(UUID uniqueId) {
-        var executor = new ThreadAsyncExecutor<Optional<ClusterPlayer>>();
+    public FutureResult<Optional<ClusterPlayer>> playerAsync(UUID uniqueId) {
+        var executor = new FutureResult<Optional<ClusterPlayer>>();
         executor.complete(Optional.ofNullable(players.get(uniqueId)));
         return executor;
     }
 
     @Override
-    public ThreadAsyncExecutor<Optional<ClusterPlayer>> playerAsync(String name) {
-        var executor = new ThreadAsyncExecutor<Optional<ClusterPlayer>>();
+    public FutureResult<Optional<ClusterPlayer>> playerAsync(String name) {
+        var executor = new FutureResult<Optional<ClusterPlayer>>();
         executor.complete(players.values().stream().filter(player -> player.name().equals(name)).findFirst());
         return executor;
     }
 
     @Override
-    public ThreadAsyncExecutor<Boolean> isOnlineAsync(String username) {
-        var executor = new ThreadAsyncExecutor<Boolean>();
+    public FutureResult<Boolean> isOnlineAsync(String username) {
+        var executor = new FutureResult<Boolean>();
         executor.complete(players.values().stream().anyMatch(player -> player.name().equals(username)));
         return executor;
     }
 
     @Override
-    public ThreadAsyncExecutor<Boolean> isOnlineAsync(UUID uniqueId) {
-        var executor = new ThreadAsyncExecutor<Boolean>();
+    public FutureResult<Boolean> isOnlineAsync(UUID uniqueId) {
+        var executor = new FutureResult<Boolean>();
         executor.complete(players.containsKey(uniqueId));
         return executor;
     }

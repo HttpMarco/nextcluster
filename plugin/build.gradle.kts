@@ -80,8 +80,6 @@ tasks.withType<Jar> {
         main: net.nextcluster.plugin.server.spigot.SpigotClusterPlugin
     """.trimIndent().format(project.version))
 }
-// Todo: We need separate directories for the different platforms yaml's because the plugin.yml is the same as the waterdog one
-
 
 tasks.shadowJar {
     archiveFileName.set("nextcluster-plugin.jar")
