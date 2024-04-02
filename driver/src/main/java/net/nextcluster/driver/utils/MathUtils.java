@@ -24,10 +24,9 @@
 
 package net.nextcluster.driver.utils;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import lombok.experimental.UtilityClass;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@UtilityClass
 public final class MathUtils {
 
     public static double percentage(double value, double max) {
@@ -40,5 +39,4 @@ public final class MathUtils {
         }
         return value * 100;
     }
-
 }

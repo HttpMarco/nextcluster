@@ -60,6 +60,7 @@ public class NextClusterManager extends NextCluster {
                 .withPort(NetworkTransmitter.NETTY_PORT)
                 .build();
 
+
         // wait for the transmitter to be ready
         playerProvider(new ManagerCloudPlayerProvider(this.transmitter()));
 
