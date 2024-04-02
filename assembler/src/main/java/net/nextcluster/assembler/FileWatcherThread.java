@@ -158,5 +158,6 @@ public class FileWatcherThread extends Thread {
                 }
             }
         }
+        return false;
     }
 }
