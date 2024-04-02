@@ -24,9 +24,13 @@
 
 package net.nextcluster.plugin;
 
+import dev.httpmarco.osgan.files.json.JsonUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import net.nextcluster.driver.NextCluster;
+import net.nextcluster.driver.event.ClusterEvent;
+import net.nextcluster.driver.event.ClusterEventCallPacket;
 import net.nextcluster.driver.resource.config.NextConfig;
 import net.nextcluster.driver.resource.config.misc.ConfigProperty;
 import net.nextcluster.driver.resource.service.ServiceInformation;
@@ -60,6 +64,14 @@ public abstract class NextClusterPlugin {
         }
 
         RestServer.init();
+
+        NextCluster.instance().transmitter().listen(ClusterEventCallPacket.class, (channel, packet) -> {
+            try {
+                NextCluster.instance().eventRegistry().callLocal(JsonUtils.fromJson(packet.json(), (Class<? extends ClusterEvent>) Class.forName(packet.eventClass())));
+                NextCluster.LOGGER.info("Calling cluster event: " + packet.eventClass());
+            } catch (ClassNotFoundException ignored) {
+            }
+        });
     }
 
     public abstract ServiceInformation currentInformation();
