@@ -1,7 +1,6 @@
 {
+  "entrypoint": "net.nextcluster.plugin.server.minestom.MinestomPlugin",
   "name": "NextCluster",
-  "version": "1.0.0",
-  "author": "nextCluster",
-  "mainClass": "net.nextcluster.plugin.server.minestom.MinestomPlugin",
-  "depends": []
+  "version": "1.0.4-SNAPSHOT",
+  "dependencies": []
 }

@@ -23,13 +23,13 @@
  */
 
 plugins {
-    `java-library`
-    `maven-publish`
+    id("java-library")
+    id("maven-publish")
 }
 
-subprojects {
+allprojects {
     group = "net.nextcluster"
-    version = "1.0.2-SNAPSHOT"
+    version = "1.0.4-SNAPSHOT"
 
     apply(plugin = "java-library")
     apply(plugin = "maven-publish")

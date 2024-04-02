@@ -24,11 +24,13 @@
 
 package net.nextcluster.manager;
 
+import dev.httpmarco.osgan.networking.server.NettyServer;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.event.ClusterEventCallPacket;
-import net.nextcluster.driver.networking.NetworkUtils;
 import net.nextcluster.driver.resource.group.NextGroup;
-import net.nextcluster.manager.networking.NettyServer;
+import net.nextcluster.driver.transmitter.NetworkTransmitter;
 import net.nextcluster.manager.networking.NettyServerTransmitter;
 import net.nextcluster.manager.resources.group.NextGroupWatcher;
 import net.nextcluster.manager.resources.player.ManagerCloudPlayerProvider;
@@ -39,25 +41,32 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 
 import java.util.function.Supplier;
 
+@Getter
+@Accessors(fluent = true)
 @SpringBootApplication(exclude = {SecurityAutoConfiguration.class})
 public class NextClusterManager extends NextCluster {
 
     public static final Supplier<String> STATIC_SERVICES_PATH = () ->
             "/srv/nextcluster/%s/static".formatted(NextCluster.instance().kubernetes().getNamespace());
 
+    private final NettyServer nettyServer;
+
     protected NextClusterManager() {
         // register communication transmitter (priority)
         super(new NettyServerTransmitter());
 
         // initialize netty server
-        try (NettyServer nettyServer = new NettyServer()) {
-            nettyServer.initialize(NetworkUtils.NETTY_PORT);
-        } catch (Exception e) {
-            LOGGER.error("Failed to initialize NettyServer!", e);
-        }
+        this.nettyServer = NettyServer.builder()
+                .withPort(NetworkTransmitter.NETTY_PORT)
+                .build();
+
 
         // wait for the transmitter to be ready
         playerProvider(new ManagerCloudPlayerProvider(this.transmitter()));
+
+        transmitter().listen(ClusterEventCallPacket.class, (channel, packet) -> {
+            nettyServer.sendPacketAndIgnoreSelf(channel.channel(), packet);
+        });
     }
 
     public static void main(String[] args) {

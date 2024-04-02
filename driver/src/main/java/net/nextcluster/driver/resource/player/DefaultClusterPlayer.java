@@ -1,5 +1,6 @@
 package net.nextcluster.driver.resource.player;
 
+import dev.httpmarco.osgan.networking.codec.CodecBuffer;
 import dev.httpmarco.osgan.utils.exceptions.NotImplementedException;
 
 import java.util.UUID;
@@ -32,5 +33,13 @@ public class DefaultClusterPlayer extends AbstractClusterPlayer {
     @Override
     public void connectToServer(String serverName) {
         throw new NotImplementedException();
+    }
+
+    @Override
+    public void write(CodecBuffer buffer) {
+        buffer.writeString(this.name());
+        buffer.writeUniqueId(this.uniqueId());
+        buffer.writeString(this.connectedProxyName());
+        buffer.writeString(this.connectedServerName());
     }
 }

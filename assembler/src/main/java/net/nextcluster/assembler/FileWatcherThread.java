@@ -25,7 +25,6 @@
 package net.nextcluster.assembler;
 
 import dev.httpmarco.osgan.files.json.JsonUtils;
-import dev.httpmarco.osgan.utils.types.MessageUtils;
 import lombok.SneakyThrows;
 import net.nextcluster.assembler.image.ImageMeta;
 import net.nextcluster.assembler.tasks.CommandLineTask;
@@ -36,6 +35,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -50,7 +50,7 @@ public class FileWatcherThread extends Thread {
     private static final String DOCKER_IMAGE_FORMAT = "%s/%s:%s";
     private static final long THREAD_SLEEP_TICKS = TimeUnit.SECONDS.toMillis(5);
     private final Map<String, Long> lastChecked = new ConcurrentHashMap<>();
-    private final Set<Path> buildQueue = new LinkedHashSet<>();
+    private final Set<String> buildQueue = new LinkedHashSet<>();
 
     public FileWatcherThread() {
         super("FileWatcherThread");
@@ -68,11 +68,12 @@ public class FileWatcherThread extends Thread {
             this.findChangedImages(images);
 
             if (!this.buildQueue.isEmpty()) {
-                var path = this.buildQueue.stream().findFirst().orElseThrow();
+                var absolute = this.buildQueue.stream().findFirst().orElseThrow();
+                var path = Paths.get(absolute);
 
                 LOGGER.info("Rebuilding image: {}", path.toFile().getName());
 
-                this.buildQueue.remove(path);
+                this.buildQueue.remove(absolute);
 
                 var meta = path.resolve("meta.json");
                 var dockerfile = path.resolve("Dockerfile");
@@ -107,7 +108,7 @@ public class FileWatcherThread extends Thread {
                     e.printStackTrace(System.err);
                 }
 
-                LOGGER.info("Remaining build queue: {}", (this.buildQueue.isEmpty() ? "empty" : String.join(", ", this.buildQueue.stream().map(path1 -> path1.toFile().getName()).toList())));
+                LOGGER.info("Remaining build queue: {}", (this.buildQueue.isEmpty() ? "empty" : String.join(", ", this.buildQueue)));
             }
 
             Thread.sleep(THREAD_SLEEP_TICKS);
@@ -135,7 +136,7 @@ public class FileWatcherThread extends Thread {
                 this.lastChecked.put(child.getAbsolutePath(), System.currentTimeMillis());
 
                 if (this.isChanged(child.toPath(), lastCheck)) {
-                    this.buildQueue.add(child.toPath());
+                    this.buildQueue.add(child.getAbsolutePath());
 
                     LOGGER.info("Found changes in file {}", child.getName());
                 }
@@ -144,17 +145,18 @@ public class FileWatcherThread extends Thread {
     }
 
     private boolean isChanged(Path path, long lastCheck) {
-        try (Stream<Path> paths = Files.walk(path)) {
-            return paths.filter(p -> !Files.isDirectory(p))
-                    .anyMatch(p -> {
-                        try {
-                            return Files.getLastModifiedTime(p).toMillis() > lastCheck;
-                        } catch (IOException e) {
-                            return false; // Suppress IOException
-                        }
-                    });
-        } catch (IOException e) {
-            return false; // Suppress IOException
+        var children = path.toFile().listFiles();
+        if (children == null) {
+            return false;
+        }
+        for (var child : children) {
+            if (child.isDirectory() && this.isChanged(child.toPath(), lastCheck)) {
+                return true;
+            } else if (!child.isDirectory() && !child.getName().endsWith(".filepart")) {
+                if (lastCheck < child.lastModified()) {
+                    return true;
+                }
+            }
         }
     }
 }

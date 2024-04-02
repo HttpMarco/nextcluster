@@ -25,7 +25,7 @@
 package net.nextcluster.assembler;
 
 import net.nextcluster.driver.NextCluster;
-import net.nextcluster.driver.networking.transmitter.NetworkTransmitter;
+import net.nextcluster.driver.transmitter.NetworkTransmitter;
 
 public class Assembler extends NextCluster {
 
