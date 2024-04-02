@@ -27,6 +27,7 @@ package net.nextcluster.module.proxy.config;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.nextcluster.module.proxy.config.models.MotdModel;
+import net.nextcluster.module.proxy.config.models.TablistModel;
 
 import java.util.List;
 import java.util.UUID;
@@ -37,6 +38,7 @@ public final class ProxyConfiguration {
 
     private final List<MotdModel> motds;
     private final List<MotdModel> maintenanceMotds;
+    private final List<TablistModel> tablists;
     private final List<UUID> whitelisted;
 
 }

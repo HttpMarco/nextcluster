@@ -24,5 +24,37 @@
 
 package net.nextcluster.module.proxy.plugin.velocity;
 
-public class VelocityProxyPlugin {
+import com.google.inject.Inject;
+import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
+import com.velocitypowered.api.plugin.Plugin;
+import com.velocitypowered.api.proxy.ProxyServer;
+import lombok.RequiredArgsConstructor;
+import net.nextcluster.module.proxy.ProxyModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+@Plugin(
+    id = "nextcluster-proxy",
+    name = "NextCluster Proxy",
+    version = "1.0.2",
+    description = "A proxy module for the NextCluster network.",
+    authors = {"nextCluster"},
+    url = "https://wiki.nextcluster.net"
+)
+@RequiredArgsConstructor(onConstructor_ = @Inject)
+public class VelocityProxyPlugin extends ProxyModule {
+
+    public static final Logger LOGGER = LoggerFactory.getLogger(VelocityProxyPlugin.class);
+
+    private final ProxyServer proxy;
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onProxyInitialization(ProxyInitializeEvent event) {
+        initialize();
+
+        LOGGER.info("Proxy module loaded!");
+    }
+
 }

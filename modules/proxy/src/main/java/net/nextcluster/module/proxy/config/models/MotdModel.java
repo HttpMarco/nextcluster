@@ -24,15 +24,17 @@
 
 package net.nextcluster.module.proxy.config.models;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 public final class MotdModel {
 
-    private final String firstLine;
-    private final String secondLine;
-    private final long next = 3 * 20L;
+    private String firstLine;
+    private String secondLine;
+    private long next = 3 * 20L;
 
 }
