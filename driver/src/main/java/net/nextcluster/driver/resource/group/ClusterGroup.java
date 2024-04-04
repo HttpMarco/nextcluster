@@ -25,6 +25,7 @@
 package net.nextcluster.driver.resource.group;
 
 import net.nextcluster.driver.resource.platform.Platform;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
@@ -37,6 +38,8 @@ public interface ClusterGroup {
     boolean isMaintenance();
 
     boolean isFallback();
+
+    @Nullable String preferredFallback();
 
     int minOnline();
 
