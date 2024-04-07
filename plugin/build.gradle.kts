@@ -48,7 +48,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly(project(":pre-vm"))
+    implementation(project(":pre-vm"))
 
     api(libs.minimessage)
     implementation(libs.minimessage)

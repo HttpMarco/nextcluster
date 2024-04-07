@@ -24,10 +24,12 @@
 
 package net.nextcluster.manager;
 
+import dev.httpmarco.osgan.files.json.JsonUtils;
 import dev.httpmarco.osgan.networking.server.NettyServer;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import net.nextcluster.driver.NextCluster;
+import net.nextcluster.driver.event.ClusterEvent;
 import net.nextcluster.driver.event.ClusterEventCallPacket;
 import net.nextcluster.driver.resource.group.NextGroup;
 import net.nextcluster.driver.transmitter.NetworkTransmitter;
@@ -66,6 +68,12 @@ public class NextClusterManager extends NextCluster {
 
         transmitter().listen(ClusterEventCallPacket.class, (channel, packet) -> {
             nettyServer.sendPacketAndIgnoreSelf(channel.channel(), packet);
+
+            try {
+                NextCluster.instance().eventRegistry().callLocal(JsonUtils.fromJson(packet.json(), (Class<? extends ClusterEvent>) Class.forName(packet.eventClass())));
+                NextCluster.LOGGER.info("Calling cluster event: " + packet.eventClass());
+            } catch (ClassNotFoundException ignored) {
+            }
         });
     }
 
@@ -88,5 +96,10 @@ public class NextClusterManager extends NextCluster {
         LOGGER.info("Custom resources successfully applied!");
         client.resources(NextGroup.class).inform(new NextGroupWatcher());
         LOGGER.info("NextClusterManager started in {}ms!", System.currentTimeMillis() - startup);
+    }
+
+    @Override
+    public ClassLoader classLoader() {
+        throw new UnsupportedOperationException("Only available at pre-vm!");
     }
 }

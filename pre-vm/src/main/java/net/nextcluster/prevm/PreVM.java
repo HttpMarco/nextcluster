@@ -63,6 +63,7 @@ public class PreVM extends NextCluster {
 
     private final String[] args;
     private final NettyClient nettyClient;
+    @Getter
     private AccessibleClassLoader classLoader;
     @Setter(AccessLevel.PACKAGE)
     private Platform platform;
@@ -97,14 +98,6 @@ public class PreVM extends NextCluster {
         }
 
         this.nettyClient = nettyBuilder.build();
-
-        transmitter().listen(ClusterEventCallPacket.class, (channel, packet) -> {
-            try {
-                NextCluster.instance().eventRegistry().callLocal(JsonUtils.fromJson(packet.json(), (Class<? extends ClusterEvent>) Class.forName(packet.eventClass())));
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-        });
     }
 
     public static void premain(String args, Instrumentation instrumentation) {
@@ -140,7 +133,7 @@ public class PreVM extends NextCluster {
 
     @SneakyThrows
     private void startPlatform(File file) {
-        this.classLoader = new AccessibleClassLoader(new URL[]{file.toURI().toURL()});
+        this.classLoader = new AccessibleClassLoader(new URL[]{file.toURI().toURL()}, this.getClass().getClassLoader());
         try (final var jar = new JarFile(file)) {
             final var mainClass = jar.getManifest().getMainAttributes().getValue("Main-Class");
             if (this.platform instanceof PaperPlatform) {
@@ -154,18 +147,22 @@ public class PreVM extends NextCluster {
                     throw new RuntimeException(e);
                 }
             }
-            try {
-                LOGGER.info("Invoke Main-Class ({})", mainClass);
-                final var main = Class.forName(mainClass, true, classLoader).getMethod("main", String[].class);
+            var thread = new Thread(() -> {
+                try {
+                    LOGGER.info("Invoke Main-Class ({})", mainClass);
+                    final var main = Class.forName(mainClass, true, this.classLoader).getMethod("main", String[].class);
 
-                if (platform instanceof PlatformArgs platformArgs) {
-                    main.invoke(null, (Object) platformArgs.args());
-                } else {
-                    main.invoke(null, (Object) new String[0]);
+                    if (platform instanceof PlatformArgs platformArgs) {
+                        main.invoke(null, (Object) platformArgs.args());
+                    } else {
+                        main.invoke(null, (Object) new String[0]);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace(System.err);
                 }
-            } catch (Exception e) {
-                e.printStackTrace(System.err);
-            }
+            }, "platform-thread");
+            thread.setContextClassLoader(this.classLoader);
+            thread.start();
         }
     }
 }

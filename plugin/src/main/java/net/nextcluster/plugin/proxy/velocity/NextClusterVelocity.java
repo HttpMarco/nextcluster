@@ -37,6 +37,7 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.proxy.server.ServerInfo;
 import dev.httpmarco.osgan.files.json.JsonUtils;
+import dev.httpmarco.osgan.utils.RandomUtils;
 import dev.httpmarco.osgan.utils.data.Pair;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
@@ -136,11 +137,28 @@ public class NextClusterVelocity extends NextClusterProxy {
     }
 
     private Optional<RegisteredServer> findFallback() {
-        final var server = servers.values().stream().filter(InternalClusterServer::fallback).findFirst();
-        if (server.isEmpty()) {
+        var groupName = System.getenv("HOSTNAME").substring(0, System.getenv("HOSTNAME").indexOf("-"));
+        var clusterGroup = NextCluster.instance().groupProvider().group(groupName).orElse(null);
+
+        if (clusterGroup == null) {
+            NextCluster.LOGGER.error("Could not get current group ('" + groupName + "')");
             return Optional.empty();
         }
-        return this.server.getServer(server.get().name());
+
+        var stream = servers.values().stream().filter(InternalClusterServer::fallback);
+        var preferredFallback = clusterGroup.preferredFallback();
+
+        if (preferredFallback != null && !preferredFallback.isEmpty()) {
+            stream = stream.filter(clusterServer -> clusterServer.group().equals(preferredFallback));
+        }
+
+        var servers = stream.toList();
+
+        if (servers.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return this.server.getServer(servers.get(RandomUtils.getRandomNumber(servers.size())).name());
     }
 
     @Override

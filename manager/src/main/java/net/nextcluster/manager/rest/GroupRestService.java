@@ -33,6 +33,7 @@ public final class GroupRestService {
                                               @RequestParam(defaultValue = "1") int maxOnline,
                                               @RequestParam(defaultValue = "1") int minOnline,
                                               @RequestParam(defaultValue = "false") boolean fallback,
+                                              @RequestParam(defaultValue = "") String preferredFallback,
                                               @RequestParam(defaultValue = "512") int maxMemory,
                                               @RequestParam(defaultValue = "CUSTOM") String platform) {
 
@@ -40,6 +41,7 @@ public final class GroupRestService {
                 .withMaxOnline(maxOnline)
                 .withMinOnline(minOnline)
                 .withFallback(fallback)
+                .withPreferredFallback(preferredFallback)
                 .withMaxMemory(maxMemory)
                 .withPlatform(PlatformService.platform(platform))
                 .publish();

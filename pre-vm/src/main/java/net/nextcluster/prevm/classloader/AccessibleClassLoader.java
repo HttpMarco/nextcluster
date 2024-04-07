@@ -33,8 +33,8 @@ public class AccessibleClassLoader extends URLClassLoader {
         ClassLoader.registerAsParallelCapable();
     }
 
-    public AccessibleClassLoader(URL[] urls) {
-        super(urls, ClassLoader.getSystemClassLoader());
+    public AccessibleClassLoader(URL[] urls, ClassLoader parent) {
+        super(urls, parent);
     }
 
     @Override

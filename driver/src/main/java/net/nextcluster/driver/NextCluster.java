@@ -117,4 +117,6 @@ public abstract class NextCluster {
         }
         throw new NoNamespaceFoundException("Found no namespace to initialize");
     }
+
+    public abstract ClassLoader classLoader();
 }
