@@ -20,4 +20,4 @@ spec:
   maxMemory: 1024
   # Leave like this to connect players to any service with fallback=true
   # Set to group name to connect players only to services of the provided group
-  preferredFallback: ''
+  preferredFallback: ""

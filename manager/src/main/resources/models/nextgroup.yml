@@ -74,7 +74,7 @@ spec:
                   default: false
                 preferredFallback:
                   type: string
-                  default: ''
+                  default: ""
                 minOnline:
                   type: integer
                   default: 1
