@@ -19,12 +19,12 @@ kubectl apply -f https://raw.githubusercontent.com/nextCluster/nextCluster/maste
 
 ### Install a simple lobby (latest paper) template
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/nextCluster/nextCluster/master/examples/lobby.yml’
+kubectl apply -f https://raw.githubusercontent.com/nextCluster/nextCluster/master/examples/lobby.yml
 ```
 
 ### Install a simple proxy (velocity) template
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/nextCluster/nextCluster/master/examples/proxy.yml’
+kubectl apply -f https://raw.githubusercontent.com/nextCluster/nextCluster/master/examples/proxy.yml
 ```
 
 # Contributing
