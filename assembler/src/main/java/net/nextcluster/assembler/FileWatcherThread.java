@@ -30,18 +30,19 @@ import net.nextcluster.assembler.image.ImageMeta;
 import net.nextcluster.assembler.tasks.CommandLineTask;
 import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.resource.group.ClusterGroup;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 import static net.nextcluster.driver.NextCluster.LOGGER;
 
@@ -115,18 +116,7 @@ public class FileWatcherThread extends Thread {
         }
     }
 
-    private Path scanParent(Path start) {
-        if (Files.exists(start.resolve("meta.json"))) {
-            return start;
-        }
-        final var parent = start.getParent();
-        if (parent == null) {
-            return null;
-        }
-        return scanParent(parent);
-    }
-
-    private void findChangedImages(Path path) {
+    private void findChangedImages(@NotNull Path path) {
         var children = path.toFile().listFiles();
 
         if (children != null) {
@@ -144,7 +134,8 @@ public class FileWatcherThread extends Thread {
         }
     }
 
-    private boolean isChanged(Path path, long lastCheck) {
+    @SneakyThrows
+    private boolean isChanged(@NotNull Path path, long lastCheck) {
         var children = path.toFile().listFiles();
         if (children == null) {
             return false;
@@ -154,6 +145,11 @@ public class FileWatcherThread extends Thread {
                 return true;
             } else if (!child.isDirectory() && !child.getName().endsWith(".filepart")) {
                 if (lastCheck < child.lastModified()) {
+                    return true;
+                }
+
+                BasicFileAttributes attr = Files.readAttributes(path, BasicFileAttributes.class);
+                if (lastCheck < attr.creationTime().toMillis()) {
                     return true;
                 }
             }
