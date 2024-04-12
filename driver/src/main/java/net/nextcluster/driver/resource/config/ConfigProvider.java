@@ -26,23 +26,48 @@ package net.nextcluster.driver.resource.config;
 
 import dev.httpmarco.osgan.files.json.JsonUtils;
 import io.fabric8.kubernetes.api.model.ConfigMap;
-import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
-import io.fabric8.kubernetes.client.Watch;
-import io.fabric8.kubernetes.client.Watcher;
-import io.fabric8.kubernetes.client.WatcherException;
-import lombok.RequiredArgsConstructor;
+import io.fabric8.kubernetes.client.informers.ResourceEventHandler;
 import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.resource.config.misc.ConfigProperty;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
-@RequiredArgsConstructor
 public class ConfigProvider {
 
     private static final Map<String, NextConfig<?>> CONFIGS = new ConcurrentHashMap<>();
 
-    private Watch watch;
+    public ConfigProvider() {
+        NextCluster.instance().kubernetes().configMaps().inNamespace(NextCluster.instance().kubernetes().getNamespace()).inform(new ResourceEventHandler<>() {
+            @Override
+            public void onAdd(ConfigMap configMap) {
+            }
+
+            @Override
+            public void onUpdate(ConfigMap configMap, ConfigMap t1) {
+                if (!CONFIGS.containsKey(configMap.getMetadata().getName())) {
+                    return;
+                }
+
+                var config = CONFIGS.get(configMap.getMetadata().getName());
+                if (config == null || !config.hasProperty(ConfigProperty.OBSERVE)) {
+                    return;
+                }
+                final var value = configMap.getData().get("value");
+                if (value == null) {
+                    config.value(null);
+                    return;
+                }
+                config.valueMapping(JsonUtils.fromJson(value, config.type()));
+            }
+
+            @Override
+            public void onDelete(ConfigMap configMap, boolean b) {
+                CONFIGS.remove(configMap.getMetadata().getName());
+            }
+        }).start();
+    }
 
     public <T> NextConfig<T> register(NextConfig<T> config) {
         CONFIGS.put(config.name(), config);
@@ -57,33 +82,6 @@ public class ConfigProvider {
         } else {
             NextCluster.LOGGER.info("{} does not exist, creating...", config.name());
             config.value(config.value());
-        }
-
-        if (this.watch == null && config.hasProperty(ConfigProperty.OBSERVE)) {
-            this.watch = NextCluster.instance().kubernetes().configMaps().watch(new Watcher<>() {
-                @Override
-                public void eventReceived(Action action, ConfigMap resource) {
-                    if (action == Action.DELETED) {
-                        CONFIGS.remove(resource.getMetadata().getName());
-                        return;
-                    }
-                    final var config = CONFIGS.get(resource.getMetadata().getName());
-                    if (config == null) {
-                        return;
-                    }
-                    final var value = resource.getData().get("value");
-                    if (value == null) {
-                        config.value(null);
-                        return;
-                    }
-                    config.valueMapping(JsonUtils.fromJson(value, config.type()));
-                }
-
-                @Override
-                public void onClose(WatcherException cause) {
-                    cause.printStackTrace(System.err);
-                }
-            });
         }
         return config;
     }

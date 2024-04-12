@@ -27,6 +27,7 @@ package net.nextcluster.plugin.proxy;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
+import io.fabric8.kubernetes.client.informers.ResourceEventHandler;
 import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.resource.player.ClusterPlayer;
 import net.nextcluster.plugin.NextClusterPlugin;
@@ -35,6 +36,7 @@ import net.nextcluster.plugin.resources.player.ClientClusterPlayerProvider;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 public abstract class NextClusterProxy extends NextClusterPlugin {
 
@@ -49,42 +51,26 @@ public abstract class NextClusterProxy extends NextClusterPlugin {
             .pods()
             .withLabel("nextcluster", "true")
             .withLabel("nextcluster/type", "SERVER")
-            .watch(new Watcher<>() {
-                @Override
-                public void eventReceived(Action action, Pod resource) {
-                    final var name = resource.getMetadata().getName();
-                    switch (action) {
-                        case ADDED, MODIFIED -> {
-                            if (servers.containsKey(name)) {
-                                return;
-                            }
-                            final var ip = resource.getStatus().getPodIP();
-                            if (ip == null) {
-                                return;
-                            }
-                            final var group = resource.getMetadata().getLabels().get("nextcluster/group");
-                            if (group == null) {
-                                return;
-                            }
-                            final var fallback = Boolean.parseBoolean(
-                                resource.getMetadata().getLabels()
-                                    .getOrDefault("nextcluster/fallback", "false")
-                            );
-                            registerServer0(new InternalClusterServer(name, group, fallback, ip));
-                        }
-                        case DELETED -> {
-                            if (!servers.containsKey(name)) {
-                                return;
-                            }
-                            unregisterServer0(servers.remove(name));
-                        }
+                .inform(new ResourceEventHandler<>() {
+                    @Override
+                    public void onAdd(Pod obj) {
+                        registerServer(obj);
                     }
-                }
-                @Override
-                public void onClose(WatcherException cause) {
-                    cause.printStackTrace(System.err);
-                }
-            });
+
+                    @Override
+                    public void onUpdate(Pod oldObj, Pod newObj) {
+                        registerServer(newObj);
+                    }
+
+                    @Override
+                    public void onDelete(Pod obj, boolean deletedFinalStateUnknown) {
+                        final var name = obj.getMetadata().getName();
+                        if (!servers.containsKey(name)) {
+                            return;
+                        }
+                        unregisterServer0(servers.remove(name));
+                    }
+                });
     }
 
     public abstract void registerServer(InternalClusterServer server);
@@ -105,5 +91,25 @@ public abstract class NextClusterProxy extends NextClusterPlugin {
 
         servers.remove(server.name());
         unregisterServer(server);
+    }
+
+    private void registerServer(Pod pod) {
+        final var name = pod.getMetadata().getName();
+        if (servers.containsKey(name)) {
+            return;
+        }
+        final var ip = pod.getStatus().getPodIP();
+        if (ip == null) {
+            return;
+        }
+        final var group = pod.getMetadata().getLabels().get("nextcluster/group");
+        if (group == null) {
+            return;
+        }
+        final var fallback = Boolean.parseBoolean(
+                pod.getMetadata().getLabels()
+                        .getOrDefault("nextcluster/fallback", "false")
+        );
+        registerServer0(new InternalClusterServer(name, group, fallback, ip));
     }
 }

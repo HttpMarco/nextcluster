@@ -33,6 +33,6 @@ public enum ConfigProperty {
     /**
      * This property is used to observe the original value (ConfigMap) if the value is changed remotely.
      */
-    OBSERVE;
+    OBSERVE
 
 }
