@@ -13,7 +13,7 @@ minimessage = "4.16.0"
 
 # logging
 log4j = "2.23.1"
-slf4j = "2.0.12"
+slf4j = "2.0.13"
 
 #networking
 netty5 = "5.0.0.Alpha5"
