@@ -39,6 +39,7 @@ import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.resource.ClusterResource;
 import net.nextcluster.driver.resource.platform.Platform;
 import net.nextcluster.driver.resource.platform.PlatformService;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -70,6 +71,12 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
     @JsonIgnore
     public boolean isFallback() {
         return this.getSpec().isFallback();
+    }
+
+    @Override
+    @JsonIgnore
+    public @Nullable String preferredFallback() {
+        return this.getSpec().getPreferredFallback();
     }
 
     @Override
@@ -146,6 +153,10 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
         @Default("false")
         @JsonPropertyDescription("Status if the group is a fallback group (unnecessary for proxies)")
         private boolean fallback;
+
+        @Default("")
+        @JsonPropertyDescription("If set always connects a player to a service of the provided group")
+        private @Nullable String preferredFallback;
 
         @Default("false")
         @JsonProperty(value = "static")
@@ -258,6 +269,11 @@ public class NextGroup extends ClusterResource<NextGroup.Spec, NextGroup.Status>
 
         public Builder withFallback(boolean value) {
             this.spec.setFallback(value);
+            return this;
+        }
+
+        public Builder withPreferredFallback(@Nullable String value) {
+            this.spec.setPreferredFallback(value);
             return this;
         }
 

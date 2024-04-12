@@ -25,7 +25,7 @@
 package net.nextcluster.assembler;
 
 import net.nextcluster.driver.NextCluster;
-import net.nextcluster.driver.networking.transmitter.NetworkTransmitter;
+import net.nextcluster.driver.transmitter.NetworkTransmitter;
 
 public class Assembler extends NextCluster {
 
@@ -38,6 +38,11 @@ public class Assembler extends NextCluster {
 
     public Assembler(NetworkTransmitter transmitter) {
         super(transmitter);
+    }
+
+    @Override
+    public ClassLoader classLoader() {
+        throw new UnsupportedOperationException("Only available at pre-vm!");
     }
 }
 

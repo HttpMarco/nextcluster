@@ -113,6 +113,7 @@ public class Registry {
                         .addToLabels("app", "registry")
                     .endMetadata()
                     .withNewSpec()
+                        .withServiceAccountName("nextcluster")
                         .addNewContainer()
                             .withName("registry")
                             .withImage("registry:2.8.3")

@@ -1,26 +1,26 @@
 package net.nextcluster.driver.resource.player.packets;
 
+import dev.httpmarco.osgan.networking.Packet;
+import dev.httpmarco.osgan.networking.codec.CodecBuffer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import net.nextcluster.driver.networking.packets.ByteBuffer;
-import net.nextcluster.driver.networking.packets.ClusterPacket;
 import java.util.UUID;
 
 @Getter
 @Accessors(fluent = true)
-@AllArgsConstructor
-public final class ClusterPlayerDisconnectPacket implements ClusterPacket {
-
+public final class ClusterPlayerDisconnectPacket extends Packet {
     private UUID uniqueId;
 
-    @Override
-    public void write(ByteBuffer buffer) {
-        buffer.writeUUID(this.uniqueId);
+    public ClusterPlayerDisconnectPacket(UUID uniqueId) {
+        this.uniqueId = uniqueId;
+
+        this.getBuffer().writeUniqueId(uniqueId);
     }
 
-    @Override
-    public void read(ByteBuffer buffer) {
-        this.uniqueId = buffer.readUUID();
+    public ClusterPlayerDisconnectPacket(CodecBuffer buffer) {
+        super(buffer);
+
+        this.uniqueId = buffer.readUniqueId();
     }
 }

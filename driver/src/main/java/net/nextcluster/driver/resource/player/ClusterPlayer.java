@@ -24,9 +24,9 @@
 
 package net.nextcluster.driver.resource.player;
 
+import dev.httpmarco.osgan.networking.codec.CodecBuffer;
 import net.nextcluster.driver.resource.service.ClusterService;
 
-import java.util.Optional;
 import java.util.UUID;
 
 public interface ClusterPlayer {
@@ -53,4 +53,5 @@ public interface ClusterPlayer {
 
     void connectToServer(String serverName);
 
+    void write(CodecBuffer buffer);
 }

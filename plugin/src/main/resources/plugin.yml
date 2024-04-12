@@ -1,4 +1,4 @@
 name: NextCluster
 author: NextCluster
-version: 1.0.2-SNAPSHOT
+version: 1.0.4-SNAPSHOT
 main: net.nextcluster.plugin.server.spigot.SpigotClusterPlugin

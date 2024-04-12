@@ -28,7 +28,6 @@ plugins {
 
 dependencies {
     api(project(":driver"))
-    implementation(project(":driver"))
     implementation(libs.bundles.logger)
 
     // we this for paper logging

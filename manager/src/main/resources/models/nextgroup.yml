@@ -72,6 +72,9 @@ spec:
                 fallback:
                   type: boolean
                   default: false
+                preferredFallback:
+                  type: string
+                  default: ""
                 minOnline:
                   type: integer
                   default: 1

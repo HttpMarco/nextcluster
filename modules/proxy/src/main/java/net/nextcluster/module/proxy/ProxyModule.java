@@ -27,19 +27,31 @@ package net.nextcluster.module.proxy;
 import net.nextcluster.driver.resource.config.NextConfig;
 import net.nextcluster.driver.resource.config.misc.ConfigProperty;
 import net.nextcluster.module.proxy.config.ProxyConfiguration;
+import net.nextcluster.module.proxy.config.models.MotdModel;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public abstract class ProxyModule {
 
     private final NextConfig<ProxyConfiguration> config = NextConfig.builder(ProxyConfiguration.class)
+        .withId("proxy-module-config")
         .withProperties(ConfigProperty.OBSERVE, ConfigProperty.UPDATE_ORIGINAL)
         .register();
 
     public void initialize() {
         if (!config.exists()) {
             final ProxyConfiguration configuration = new ProxyConfiguration(
-                new ArrayList<>(),
+                new ArrayList<>(List.of(new MotdModel(
+                    "§6NextCluster §7- §eNextCluster Network",
+                    "§7Join our Discord at §ehttps://discord.gg/nextcluster",
+                    3 * 20L
+                ))),
+                new ArrayList<>(List.of(new MotdModel(
+                    "§6NextCluster §7- §eNextCluster Network",
+                    "§7Join our Discord at §ehttps://discord.gg/nextcluster",
+                    3 * 20L
+                ))),
                 new ArrayList<>(),
                 new ArrayList<>()
             );

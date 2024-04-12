@@ -24,57 +24,74 @@
 
 package net.nextcluster.manager;
 
+import dev.httpmarco.osgan.files.json.JsonUtils;
+import dev.httpmarco.osgan.networking.server.NettyServer;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 import net.nextcluster.driver.NextCluster;
+import net.nextcluster.driver.event.ClusterEvent;
 import net.nextcluster.driver.event.ClusterEventCallPacket;
-import net.nextcluster.driver.networking.NetworkUtils;
 import net.nextcluster.driver.resource.group.NextGroup;
-import net.nextcluster.manager.networking.NettyServer;
+import net.nextcluster.driver.transmitter.NetworkTransmitter;
 import net.nextcluster.manager.networking.NettyServerTransmitter;
 import net.nextcluster.manager.resources.group.NextGroupWatcher;
 import net.nextcluster.manager.resources.player.ManagerCloudPlayerProvider;
-import org.springframework.boot.Banner;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.boot.builder.SpringApplicationBuilder;
 
 import java.util.function.Supplier;
 
-@SpringBootApplication(exclude = {SecurityAutoConfiguration.class})
+@Getter
+@Accessors(fluent = true)
 public class NextClusterManager extends NextCluster {
 
     public static final Supplier<String> STATIC_SERVICES_PATH = () ->
-        "/srv/nextcluster/%s/static".formatted(NextCluster.instance().kubernetes().getNamespace());
+            "/srv/nextcluster/%s/static".formatted(NextCluster.instance().kubernetes().getNamespace());
+
+    private final NettyServer nettyServer;
 
     protected NextClusterManager() {
         // register communication transmitter (priority)
         super(new NettyServerTransmitter());
 
         // initialize netty server
-        var nettyServer = new NettyServer();
-        nettyServer.initialize(NetworkUtils.NETTY_PORT);
+        this.nettyServer = NettyServer.builder()
+                .withPort(NetworkTransmitter.NETTY_PORT)
+                .build();
+
 
         // wait for the transmitter to be ready
         playerProvider(new ManagerCloudPlayerProvider(this.transmitter()));
+
+        transmitter().listen(ClusterEventCallPacket.class, (channel, packet) -> {
+            nettyServer.sendPacketAndIgnoreSelf(channel.channel(), packet);
+
+            try {
+                NextCluster.instance().eventRegistry().callLocal(JsonUtils.fromJson(packet.json(), (Class<? extends ClusterEvent>) Class.forName(packet.eventClass())));
+                NextCluster.LOGGER.info("Calling cluster event: " + packet.eventClass());
+            } catch (ClassNotFoundException ignored) {
+            }
+        });
     }
 
     public static void main(String[] args) {
         long startup = System.currentTimeMillis();
-        new SpringApplicationBuilder(NextClusterManager.class)
-            .bannerMode(Banner.Mode.OFF)
-            .run(args);
+        new NextClusterManager();
 
         var client = NextCluster.instance().kubernetes();
-
         LOGGER.info("Applying custom resources...");
         Initializer.initialize(client);
         client.apiextensions()
-            .v1()
-            .customResourceDefinitions()
-            .load(ClassLoader.getSystemClassLoader().getResourceAsStream("models/nextgroup.yml"))
-            .forceConflicts()
-            .serverSideApply();
+                .v1()
+                .customResourceDefinitions()
+                .load(ClassLoader.getSystemClassLoader().getResourceAsStream("models/nextgroup.yml"))
+                .forceConflicts()
+                .serverSideApply();
         LOGGER.info("Custom resources successfully applied!");
         client.resources(NextGroup.class).inform(new NextGroupWatcher());
         LOGGER.info("NextClusterManager started in {}ms!", System.currentTimeMillis() - startup);
+    }
+
+    @Override
+    public ClassLoader classLoader() {
+        throw new UnsupportedOperationException("Only available at pre-vm!");
     }
 }

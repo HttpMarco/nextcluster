@@ -25,6 +25,8 @@
 package net.nextcluster.prevm;
 
 import dev.httpmarco.osgan.files.json.JsonUtils;
+import dev.httpmarco.osgan.networking.client.NettyClient;
+import dev.httpmarco.osgan.networking.server.NettyServer;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,15 +35,14 @@ import lombok.experimental.Accessors;
 import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.event.ClusterEvent;
 import net.nextcluster.driver.event.ClusterEventCallPacket;
-import net.nextcluster.driver.networking.NetworkUtils;
 import net.nextcluster.driver.resource.platform.DownloadablePlatform;
 import net.nextcluster.driver.resource.platform.Platform;
 import net.nextcluster.driver.resource.platform.PlatformArgs;
 import net.nextcluster.driver.resource.platform.PlatformService;
 import net.nextcluster.driver.resource.platform.paper.PaperPlatform;
+import net.nextcluster.driver.transmitter.NetworkTransmitter;
 import net.nextcluster.prevm.classloader.AccessibleClassLoader;
 import net.nextcluster.prevm.exception.NoPlatformFoundException;
-import net.nextcluster.prevm.networking.NettyClient;
 import net.nextcluster.prevm.networking.NettyClientTransmitter;
 
 import java.io.File;
@@ -50,6 +51,7 @@ import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.TimeUnit;
 import java.util.jar.JarFile;
 
 @Accessors(fluent = true)
@@ -61,14 +63,15 @@ public class PreVM extends NextCluster {
 
     private final String[] args;
     private final NettyClient nettyClient;
+    @Getter
     private AccessibleClassLoader classLoader;
     @Setter(AccessLevel.PACKAGE)
     private Platform platform;
 
     private PreVM(String[] args) {
         super(new NettyClientTransmitter());
+
         this.args = args;
-        this.nettyClient = new NettyClient((NettyClientTransmitter) transmitter());
 
         var managerIp = NextCluster.instance()
                 .kubernetes()
@@ -79,19 +82,22 @@ public class PreVM extends NextCluster {
                 .orElse(null);
 
         if (managerIp != null) {
-            NextCluster.LOGGER.info("Connecting to manager on '" + managerIp.get().getStatus().getPodIP() + ":" + NetworkUtils.NETTY_PORT + "'");
-            this.nettyClient.connect(managerIp.get().getStatus().getPodIP(), NetworkUtils.NETTY_PORT);
+            NextCluster.LOGGER.info("Trying to conect to manager on '" + managerIp.get().getStatus().getPodIP() + ":" + NetworkTransmitter.NETTY_PORT + "'");
         } else {
-            NextCluster.LOGGER.error("Could not find a manager pod! Netty will not work.");
+            //TODO maybe dont throw exception?
+            throw new RuntimeException("Could not find manager pod! Exiting...");
         }
 
-        transmitter().registerListener(ClusterEventCallPacket.class, (channel, packet) -> {
-            try {
-                NextCluster.instance().eventRegistry().callLocal(JsonUtils.fromJson(packet.json(), (Class<? extends ClusterEvent>) Class.forName(packet.eventClass())));
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        var nettyBuilder = NettyClient.builder()
+                .withHostname(managerIp.get().getStatus().getPodIP())
+                .withPort(NetworkTransmitter.NETTY_PORT)
+                .withReconnect(TimeUnit.SECONDS, 5);
+
+        if (System.getenv("NETTY_CLIENT_ID") != null) {
+            nettyBuilder.withId(System.getenv("NETTY_CLIENT_ID"));
+        }
+
+        this.nettyClient = nettyBuilder.build();
     }
 
     public static void premain(String args, Instrumentation instrumentation) {
@@ -127,7 +133,7 @@ public class PreVM extends NextCluster {
 
     @SneakyThrows
     private void startPlatform(File file) {
-        this.classLoader = new AccessibleClassLoader(new URL[]{file.toURI().toURL()});
+        this.classLoader = new AccessibleClassLoader(new URL[]{file.toURI().toURL()}, this.getClass().getClassLoader());
         try (final var jar = new JarFile(file)) {
             final var mainClass = jar.getManifest().getMainAttributes().getValue("Main-Class");
             if (this.platform instanceof PaperPlatform) {
@@ -141,18 +147,22 @@ public class PreVM extends NextCluster {
                     throw new RuntimeException(e);
                 }
             }
-            try {
-                LOGGER.info("Invoke Main-Class ({})", mainClass);
-                final var main = Class.forName(mainClass, true, classLoader).getMethod("main", String[].class);
+            var thread = new Thread(() -> {
+                try {
+                    LOGGER.info("Invoke Main-Class ({})", mainClass);
+                    final var main = Class.forName(mainClass, true, this.classLoader).getMethod("main", String[].class);
 
-                if (platform instanceof PlatformArgs platformArgs) {
-                    main.invoke(null, (Object) platformArgs.args());
-                } else {
-                    main.invoke(null, (Object) new String[0]);
+                    if (platform instanceof PlatformArgs platformArgs) {
+                        main.invoke(null, (Object) platformArgs.args());
+                    } else {
+                        main.invoke(null, (Object) new String[0]);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace(System.err);
                 }
-            } catch (Exception e) {
-                e.printStackTrace(System.err);
-            }
+            }, "platform-thread");
+            thread.setContextClassLoader(this.classLoader);
+            thread.start();
         }
     }
 }

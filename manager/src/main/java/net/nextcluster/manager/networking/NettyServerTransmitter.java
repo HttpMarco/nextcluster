@@ -24,43 +24,63 @@
 
 package net.nextcluster.manager.networking;
 
+import dev.httpmarco.osgan.files.json.JsonObjectSerializer;
+import dev.httpmarco.osgan.networking.Packet;
+import dev.httpmarco.osgan.networking.listening.ChannelPacketListener;
+import dev.httpmarco.osgan.networking.request.PacketResponder;
+import dev.httpmarco.osgan.networking.server.NettyServer;
 import io.netty5.channel.Channel;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import net.nextcluster.driver.networking.packets.ClusterPacket;
-import net.nextcluster.driver.networking.transmitter.NetworkTransmitter;
+import net.nextcluster.driver.NextCluster;
+import net.nextcluster.driver.transmitter.NetworkTransmitter;
+import net.nextcluster.manager.NextClusterManager;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.function.Consumer;
 
 @Getter
 @Accessors(fluent = true)
 public class NettyServerTransmitter extends NetworkTransmitter {
-
-    private final List<Channel> channels = new ArrayList<>();
-
     @Override
-    public void send(ClusterPacket packet) {
-        for (Channel channel : channels) {
-            this.send(channel, packet);
-        }
+    public void send(Packet packet) {
+        this.nettyServer().sendPacket(packet);
     }
 
     @Override
-    public void send(Channel channel, ClusterPacket packet) {
-        channel.writeAndFlush(packet);
+    public void send(Channel channel, Packet packet) {
+        this.nettyServer().sendPacket(channel, packet);
     }
 
     @Override
-    public <T extends ClusterPacket> void forward(T t) {
-        send(t);
+    public void redirect(String id, Packet packet) {
+        this.nettyServer().redirectPacket(id, packet);
     }
 
-    public void sendAllAndIgnoreSelf(Channel incomingChannel, ClusterPacket packet) {
-        for (var channel : channels()) {
-            if (!incomingChannel.equals(channel)) {
-                channel.writeAndFlush(packet);
-            }
-        }
+    public void sendAllAndIgnoreSelf(Channel incomingChannel, Packet packet) {
+        this.nettyServer().sendPacketAndIgnoreSelf(incomingChannel, packet);
+    }
+
+    @Override
+    public <P extends Packet> void listen(Class<P> packetClass, ChannelPacketListener<P> listener) {
+        this.nettyServer().listen(packetClass, listener);
+    }
+
+    @Override
+    public <T extends Packet> void request(String id, Class<T> responsePacket, Consumer<T> consumer) {
+        this.nettyServer().request(id, new JsonObjectSerializer(), responsePacket, consumer);
+    }
+
+    @Override
+    public <T extends Packet> void request(String id, JsonObjectSerializer properties, Class<T> responsePacket, Consumer<T> consumer) {
+        this.nettyServer().request(id, properties, responsePacket, consumer);
+    }
+
+    @Override
+    public <T extends Packet> void registerResponder(String id, PacketResponder<T> responder) {
+        this.nettyServer().registerResponder(id, responder);
+    }
+
+    private NettyServer nettyServer() {
+        return ((NextClusterManager) NextCluster.instance()).nettyServer();
     }
 }
