@@ -48,14 +48,13 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":pre-vm"))
+    compileOnly(project(":pre-vm"))
 
     api(libs.minimessage)
     implementation(libs.minimessage)
 
     compileOnly("com.velocitypowered:velocity-api:3.3.0-SNAPSHOT")
     annotationProcessor("com.velocitypowered:velocity-api:3.3.0-SNAPSHOT")
-    compileOnly("net.md-5:bungeecord-api:1.20-R0.2")
     compileOnly("net.md-5:bungeecord-api:1.20-R0.2")
     compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
     compileOnly("net.minestom:common:1.0.10-SNAPSHOT")
