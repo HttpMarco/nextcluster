@@ -24,7 +24,10 @@
 
 package net.nextcluster.manager.networking;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import dev.httpmarco.osgan.files.json.JsonObjectSerializer;
+import dev.httpmarco.osgan.networking.ChannelTransmit;
 import dev.httpmarco.osgan.networking.Packet;
 import dev.httpmarco.osgan.networking.listening.ChannelPacketListener;
 import dev.httpmarco.osgan.networking.request.PacketResponder;
@@ -34,13 +37,32 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.transmitter.NetworkTransmitter;
+import net.nextcluster.driver.transmitter.RedirectPacket;
 import net.nextcluster.manager.NextClusterManager;
 
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 @Getter
 @Accessors(fluent = true)
 public class NettyServerTransmitter extends NetworkTransmitter {
+    private final Map<String, List<ChannelTransmit>> transmitsById = Maps.newHashMap();
+
+    public void registerTransmitter(String id, ChannelTransmit transmit) {
+        if (!this.transmitsById.containsKey(id)) {
+            this.transmitsById.put(id, Lists.newArrayList());
+        }
+
+        this.transmitsById.get(id).add(transmit);
+
+        NextCluster.LOGGER.info("Channel {} registered with id '{}'", transmit.channel().remoteAddress(), id);
+    }
+
+    public void unregisterTransmitter(ChannelTransmit transmit) {
+        this.transmitsById.forEach((s, channelTransmits) -> channelTransmits.remove(transmit));
+    }
+
     @Override
     public void send(Packet packet) {
         this.nettyServer().sendPacket(packet);
@@ -53,7 +75,7 @@ public class NettyServerTransmitter extends NetworkTransmitter {
 
     @Override
     public void redirect(String id, Packet packet) {
-        this.nettyServer().redirectPacket(id, packet);
+        this.doRedirect(id, new RedirectPacket(id, packet));
     }
 
     public void sendAllAndIgnoreSelf(Channel incomingChannel, Packet packet) {
@@ -78,6 +100,14 @@ public class NettyServerTransmitter extends NetworkTransmitter {
     @Override
     public <T extends Packet> void registerResponder(String id, PacketResponder<T> responder) {
         this.nettyServer().registerResponder(id, responder);
+    }
+
+    public void doRedirect(String id, Packet packet) {
+        var matchingTransmits = this.transmitsById.getOrDefault(id, Lists.newArrayList());
+
+        if (!matchingTransmits.isEmpty()) {
+            matchingTransmits.forEach(matching -> matching.sendPacket(packet));
+        }
     }
 
     private NettyServer nettyServer() {

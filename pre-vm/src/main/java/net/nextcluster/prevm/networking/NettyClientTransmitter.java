@@ -34,6 +34,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.transmitter.NetworkTransmitter;
+import net.nextcluster.driver.transmitter.RedirectPacket;
 import net.nextcluster.prevm.PreVM;
 
 import java.util.function.Consumer;
@@ -53,7 +54,7 @@ public class NettyClientTransmitter extends NetworkTransmitter {
 
     @Override
     public void redirect(String id, Packet packet) {
-        this.nettyClient().redirectPacket(id, packet);
+        this.send(new RedirectPacket(id, packet));
     }
 
     @Override

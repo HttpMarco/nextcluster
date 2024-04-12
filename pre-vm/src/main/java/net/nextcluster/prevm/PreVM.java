@@ -24,22 +24,19 @@
 
 package net.nextcluster.prevm;
 
-import dev.httpmarco.osgan.files.json.JsonUtils;
 import dev.httpmarco.osgan.networking.client.NettyClient;
-import dev.httpmarco.osgan.networking.server.NettyServer;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import net.nextcluster.driver.NextCluster;
-import net.nextcluster.driver.event.ClusterEvent;
-import net.nextcluster.driver.event.ClusterEventCallPacket;
 import net.nextcluster.driver.resource.platform.DownloadablePlatform;
 import net.nextcluster.driver.resource.platform.Platform;
 import net.nextcluster.driver.resource.platform.PlatformArgs;
 import net.nextcluster.driver.resource.platform.PlatformService;
 import net.nextcluster.driver.resource.platform.paper.PaperPlatform;
+import net.nextcluster.driver.transmitter.ChannelIdPacket;
 import net.nextcluster.driver.transmitter.NetworkTransmitter;
 import net.nextcluster.prevm.classloader.AccessibleClassLoader;
 import net.nextcluster.prevm.exception.NoPlatformFoundException;
@@ -82,7 +79,7 @@ public class PreVM extends NextCluster {
                 .orElse(null);
 
         if (managerIp != null) {
-            NextCluster.LOGGER.info("Trying to conect to manager on '" + managerIp.get().getStatus().getPodIP() + ":" + NetworkTransmitter.NETTY_PORT + "'");
+            NextCluster.LOGGER.info("Trying to connect to manager on '" + managerIp.get().getStatus().getPodIP() + ":" + NetworkTransmitter.NETTY_PORT + "'");
         } else {
             //TODO maybe dont throw exception?
             throw new RuntimeException("Could not find manager pod! Exiting...");
@@ -91,11 +88,12 @@ public class PreVM extends NextCluster {
         var nettyBuilder = NettyClient.builder()
                 .withHostname(managerIp.get().getStatus().getPodIP())
                 .withPort(NetworkTransmitter.NETTY_PORT)
-                .withReconnect(TimeUnit.SECONDS, 5);
-
-        if (System.getenv("NETTY_CLIENT_ID") != null) {
-            nettyBuilder.withId(System.getenv("NETTY_CLIENT_ID"));
-        }
+                .withReconnect(TimeUnit.SECONDS, 5)
+                .onActive(transmit -> {
+                    if (System.getenv("NETTY_CLIENT_ID") != null) {
+                        transmitter().send(new ChannelIdPacket(System.getenv("NETTY_CLIENT_ID")));
+                    }
+                });
 
         this.nettyClient = nettyBuilder.build();
     }
