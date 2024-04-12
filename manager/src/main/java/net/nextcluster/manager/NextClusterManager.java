@@ -36,16 +36,11 @@ import net.nextcluster.driver.transmitter.NetworkTransmitter;
 import net.nextcluster.manager.networking.NettyServerTransmitter;
 import net.nextcluster.manager.resources.group.NextGroupWatcher;
 import net.nextcluster.manager.resources.player.ManagerCloudPlayerProvider;
-import org.springframework.boot.Banner;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.boot.builder.SpringApplicationBuilder;
 
 import java.util.function.Supplier;
 
 @Getter
 @Accessors(fluent = true)
-@SpringBootApplication(exclude = {SecurityAutoConfiguration.class})
 public class NextClusterManager extends NextCluster {
 
     public static final Supplier<String> STATIC_SERVICES_PATH = () ->
@@ -79,12 +74,9 @@ public class NextClusterManager extends NextCluster {
 
     public static void main(String[] args) {
         long startup = System.currentTimeMillis();
-        new SpringApplicationBuilder(NextClusterManager.class)
-                .bannerMode(Banner.Mode.OFF)
-                .run(args);
+        new NextClusterManager();
 
         var client = NextCluster.instance().kubernetes();
-
         LOGGER.info("Applying custom resources...");
         Initializer.initialize(client);
         client.apiextensions()

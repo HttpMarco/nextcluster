@@ -17,17 +17,17 @@ You have to install these [dependencies](https://wiki.nextcluster.net/docs/insta
 kubectl apply -f https://raw.githubusercontent.com/nextCluster/nextCluster/master/scripts/init-cluster.yml
 ```
 
-# Planned in the future
-- [ ] (install-script) Add support for other operating systems
-- [ ] Dashboard
-- [ ] Proxy-Module
+### Install a simple lobby (latest paper) template
+```bash
+kubectl apply -f https://raw.githubusercontent.com/nextCluster/nextCluster/master/examples/lobby.yml
+```
+
+### Install a simple proxy (velocity) template
+```bash
+kubectl apply -f https://raw.githubusercontent.com/nextCluster/nextCluster/master/examples/proxy.yml
+```
 
 # Contributing
 You can contribute to the project by forking the repository and creating a pull request. You can also contribute by creating an issue.
 Pull Requests are welcome.<br/>
 For major changes, please open an issue first to discuss what you would like to change.
-
-****
-<p align="center">
-    Readme work in progress...
-</p>
