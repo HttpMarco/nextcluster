@@ -24,13 +24,18 @@
 
 package net.nextcluster.prevm;
 
+import dev.httpmarco.osgan.files.json.JsonUtils;
+import dev.httpmarco.osgan.networking.Packet;
 import dev.httpmarco.osgan.networking.client.NettyClient;
+import dev.httpmarco.osgan.utils.exceptions.NotImplementedException;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import net.nextcluster.driver.NextCluster;
+import net.nextcluster.driver.event.ClusterEvent;
+import net.nextcluster.driver.event.ClusterEventCallPacket;
 import net.nextcluster.driver.resource.platform.DownloadablePlatform;
 import net.nextcluster.driver.resource.platform.Platform;
 import net.nextcluster.driver.resource.platform.PlatformArgs;
@@ -38,6 +43,7 @@ import net.nextcluster.driver.resource.platform.PlatformService;
 import net.nextcluster.driver.resource.platform.paper.PaperPlatform;
 import net.nextcluster.driver.transmitter.ChannelIdPacket;
 import net.nextcluster.driver.transmitter.NetworkTransmitter;
+import net.nextcluster.driver.transmitter.RedirectPacket;
 import net.nextcluster.prevm.classloader.AccessibleClassLoader;
 import net.nextcluster.prevm.exception.NoPlatformFoundException;
 import net.nextcluster.prevm.networking.NettyClientTransmitter;
@@ -64,6 +70,8 @@ public class PreVM extends NextCluster {
     private AccessibleClassLoader classLoader;
     @Setter(AccessLevel.PACKAGE)
     private Platform platform;
+    @Setter(AccessLevel.PRIVATE)
+    private NextClusterLoadable loadable;
 
     private PreVM(String[] args) {
         super(new NettyClientTransmitter());
@@ -96,6 +104,16 @@ public class PreVM extends NextCluster {
                 });
 
         this.nettyClient = nettyBuilder.build();
+
+        NextCluster.instance().transmitter().listen(ClusterEventCallPacket.class, (channel, packet) -> {
+            NextCluster.instance().eventRegistry().callLocal(JsonUtils.fromJson(packet.json(), (Class<? extends ClusterEvent>) this.classByName(packet.eventClass())));
+            NextCluster.LOGGER.info("Calling cluster event: " + packet.eventClass());
+        });
+
+        NextCluster.instance().transmitter().listen(RedirectPacket.class, (transmit, packet) -> {
+            this.nettyClient().callPacketReceived(transmit, (Packet) JsonUtils.fromJson(packet.packetJson(), this.classByName(packet.className())));
+            NextCluster.LOGGER.info("Calling redirect packet: " + packet.className());
+        });
     }
 
     public static void premain(String args, Instrumentation instrumentation) {
@@ -127,6 +145,12 @@ public class PreVM extends NextCluster {
             instrumentation.appendToSystemClassLoaderSearch(new JarFile(platform.toFile()));
         }
         preVM.startPlatform(platform.toFile());
+    }
+
+    public static void supplyLoadable(NextClusterLoadable loadable) {
+        if (NextCluster.instance() != null && NextCluster.instance() instanceof PreVM preVM && preVM.loadable() == null) {
+            preVM.loadable(loadable);
+        }
     }
 
     @SneakyThrows
@@ -162,5 +186,13 @@ public class PreVM extends NextCluster {
             thread.setContextClassLoader(this.classLoader);
             thread.start();
         }
+    }
+
+    private Class<?> classByName(String name) {
+        if (this.loadable == null) {
+            throw new NotImplementedException("No class overrides this method! This means you either don't have the NextCluster plugin loaded or your service main class does not call PreVM.supplyLoadable()");
+        }
+
+        return this.loadable.classByName(name);
     }
 }
