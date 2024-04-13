@@ -39,11 +39,6 @@ public class Assembler extends NextCluster {
     public Assembler(NetworkTransmitter transmitter) {
         super(transmitter);
     }
-
-    @Override
-    public ClassLoader classLoader() {
-        throw new UnsupportedOperationException("Only available at pre-vm!");
-    }
 }
 
 

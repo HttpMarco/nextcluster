@@ -28,12 +28,13 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
+import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.resource.config.NextConfig;
 import net.nextcluster.driver.resource.config.misc.ConfigProperty;
 import net.nextcluster.driver.resource.service.ServiceInformation;
 import net.nextcluster.plugin.misc.IngameMessages;
 import net.nextcluster.plugin.rest.RestServer;
-import net.nextcluster.prevm.NextClusterLoadable;
+import net.nextcluster.driver.NextClusterLoadable;
 import net.nextcluster.prevm.PreVM;
 
 @Getter
@@ -64,7 +65,7 @@ public abstract class NextClusterPlugin implements NextClusterLoadable {
 
         //TODO remove?
         RestServer.init();
-        PreVM.supplyLoadable(this);
+        NextCluster.supplyLoadable(this);
     }
 
     public abstract ServiceInformation currentInformation();

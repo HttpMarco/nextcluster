@@ -34,6 +34,7 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import net.nextcluster.driver.NextCluster;
+import net.nextcluster.driver.NextClusterLoadable;
 import net.nextcluster.driver.event.ClusterEvent;
 import net.nextcluster.driver.event.ClusterEventCallPacket;
 import net.nextcluster.driver.resource.platform.DownloadablePlatform;
@@ -70,8 +71,6 @@ public class PreVM extends NextCluster {
     private AccessibleClassLoader classLoader;
     @Setter(AccessLevel.PACKAGE)
     private Platform platform;
-    @Setter(AccessLevel.PRIVATE)
-    private NextClusterLoadable loadable;
 
     private PreVM(String[] args) {
         super(new NettyClientTransmitter());
@@ -147,12 +146,6 @@ public class PreVM extends NextCluster {
         preVM.startPlatform(platform.toFile());
     }
 
-    public static void supplyLoadable(NextClusterLoadable loadable) {
-        if (NextCluster.instance() != null && NextCluster.instance() instanceof PreVM preVM && preVM.loadable() == null) {
-            preVM.loadable(loadable);
-        }
-    }
-
     @SneakyThrows
     private void startPlatform(File file) {
         this.classLoader = new AccessibleClassLoader(new URL[]{file.toURI().toURL()}, this.getClass().getClassLoader());
@@ -186,13 +179,5 @@ public class PreVM extends NextCluster {
             thread.setContextClassLoader(this.classLoader);
             thread.start();
         }
-    }
-
-    private Class<?> classByName(String name) {
-        if (this.loadable == null) {
-            throw new NotImplementedException("No class overrides this method! This means you either don't have the NextCluster plugin loaded or your service main class does not call PreVM.supplyLoadable()");
-        }
-
-        return this.loadable.classByName(name);
     }
 }

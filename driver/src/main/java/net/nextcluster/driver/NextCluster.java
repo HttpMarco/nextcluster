@@ -24,9 +24,11 @@
 
 package net.nextcluster.driver;
 
+import dev.httpmarco.osgan.utils.exceptions.NotImplementedException;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -66,6 +68,9 @@ public abstract class NextCluster {
     private final NetworkTransmitter transmitter;
     private final EventRegistry eventRegistry;
     private final MessageService messageService;
+    @Setter(AccessLevel.PRIVATE)
+    private NextClusterLoadable loadable;
+
 
     @Setter
     private @Nullable PlayerProvider playerProvider;
@@ -94,6 +99,20 @@ public abstract class NextCluster {
         this.messageService = new MessageService();
     }
 
+    public static void supplyLoadable(NextClusterLoadable loadable) {
+        if (NextCluster.instance() != null && NextCluster.instance().loadable() == null) {
+            NextCluster.instance().loadable(loadable);
+        }
+    }
+
+    public Class<?> classByName(String name) {
+        if (this.loadable() == null) {
+            throw new NotImplementedException("No class overrides this method! This means you either don't have the NextCluster plugin loaded or your main class does not call NextCluster.supplyLoadable()");
+        }
+
+        return this.loadable().classByName(name);
+    }
+
     private void logBanner() {
         LOGGER.info(" ");
         LOGGER.info(" _   _           _    _____ _           _            ");
@@ -117,6 +136,4 @@ public abstract class NextCluster {
         }
         throw new NoNamespaceFoundException("Found no namespace to initialize");
     }
-
-    public abstract ClassLoader classLoader();
 }

@@ -95,9 +95,4 @@ public class NextClusterManager extends NextCluster {
         client.resources(NextGroup.class).inform(new NextGroupWatcher());
         LOGGER.info("NextClusterManager started in {}ms!", System.currentTimeMillis() - startup);
     }
-
-    @Override
-    public ClassLoader classLoader() {
-        throw new UnsupportedOperationException("Only available at pre-vm!");
-    }
 }
