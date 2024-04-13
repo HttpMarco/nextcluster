@@ -24,7 +24,9 @@
 
 package net.nextcluster.plugin;
 
+import com.google.common.collect.Lists;
 import dev.httpmarco.osgan.files.json.JsonUtils;
+import dev.httpmarco.osgan.networking.Packet;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -34,8 +36,10 @@ import net.nextcluster.driver.event.ClusterEventCallPacket;
 import net.nextcluster.driver.resource.config.NextConfig;
 import net.nextcluster.driver.resource.config.misc.ConfigProperty;
 import net.nextcluster.driver.resource.service.ServiceInformation;
+import net.nextcluster.driver.transmitter.RedirectPacket;
 import net.nextcluster.plugin.misc.IngameMessages;
 import net.nextcluster.plugin.rest.RestServer;
+import net.nextcluster.prevm.PreVM;
 
 @Getter
 @Accessors(fluent = true)
@@ -70,6 +74,14 @@ public abstract class NextClusterPlugin {
                 NextCluster.instance().eventRegistry().callLocal(JsonUtils.fromJson(packet.json(), (Class<? extends ClusterEvent>) Class.forName(packet.eventClass())));
                 NextCluster.LOGGER.info("Calling cluster event: " + packet.eventClass());
             } catch (ClassNotFoundException ignored) {
+            }
+        });
+
+        NextCluster.instance().transmitter().listen(RedirectPacket.class, (transmit, packet) -> {
+            try {
+                ((PreVM) NextCluster.instance()).nettyClient().callPacketReceived(transmit, (Packet) JsonUtils.fromJson(packet.packetJson(), Class.forName(packet.className())));
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
             }
         });
     }

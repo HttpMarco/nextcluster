@@ -21,9 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 dependencies {
-    api(libs.kubernetes)
+    api(libs.kubernetes) {
+        exclude("io.fabric8", "kubernetes-httpclient-okhttp")
+    }
+    api(libs.kuberneteshttp)
+
     api(libs.guava)
     api(libs.annotations)
     api(libs.gson)
