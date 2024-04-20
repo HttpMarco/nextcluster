@@ -105,7 +105,7 @@ public abstract class NextCluster {
         }
     }
 
-    public Class<?> classByName(String name) {
+    public Class<?> classByName(String name) throws ClassNotFoundException {
         if (this.loadable() == null) {
             throw new NotImplementedException("No class overrides this method! This means you either don't have the NextCluster plugin loaded or your main class does not call NextCluster.supplyLoadable()");
         }

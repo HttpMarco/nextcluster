@@ -72,9 +72,8 @@ public abstract class NextClusterPlugin implements NextClusterLoadable {
 
     public abstract void dispatchCommand(String command);
 
-    @SneakyThrows
     @Override
-    public Class<?> classByName(String name) {
+    public Class<?> classByName(String name) throws ClassNotFoundException {
         return Class.forName(name);
     }
 }

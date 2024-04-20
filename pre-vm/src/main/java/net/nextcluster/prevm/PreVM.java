@@ -105,13 +105,21 @@ public class PreVM extends NextCluster {
         this.nettyClient = nettyBuilder.build();
 
         NextCluster.instance().transmitter().listen(ClusterEventCallPacket.class, (channel, packet) -> {
-            NextCluster.instance().eventRegistry().callLocal(JsonUtils.fromJson(packet.json(), (Class<? extends ClusterEvent>) this.classByName(packet.eventClass())));
-            NextCluster.LOGGER.info("Calling cluster event: " + packet.eventClass());
+            try {
+                NextCluster.instance().eventRegistry().callLocal(JsonUtils.fromJson(packet.json(), (Class<? extends ClusterEvent>) this.classByName(packet.eventClass())));
+                NextCluster.LOGGER.info("Calling cluster event: " + packet.eventClass());
+            } catch (ClassNotFoundException ignored) {
+                NextCluster.LOGGER.warn("Received cluster event packet but could not find event class: " + packet.eventClass());
+            }
         });
 
         NextCluster.instance().transmitter().listen(RedirectPacket.class, (transmit, packet) -> {
-            this.nettyClient().callPacketReceived(transmit, (Packet) JsonUtils.fromJson(packet.packetJson(), this.classByName(packet.className())));
-            NextCluster.LOGGER.info("Calling redirect packet: " + packet.className());
+            try {
+                this.nettyClient().callPacketReceived(transmit, (Packet) JsonUtils.fromJson(packet.packetJson(), this.classByName(packet.className())));
+                NextCluster.LOGGER.info("Calling redirect packet: " + packet.className());
+            } catch (ClassNotFoundException ignored) {
+                NextCluster.LOGGER.warn("Received redirect packet but could not find packet class: " + packet.className());
+            }
         });
     }
 
