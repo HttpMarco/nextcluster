@@ -24,13 +24,19 @@
 
 package net.nextcluster.prevm;
 
+import dev.httpmarco.osgan.files.json.JsonUtils;
+import dev.httpmarco.osgan.networking.Packet;
 import dev.httpmarco.osgan.networking.client.NettyClient;
+import dev.httpmarco.osgan.utils.exceptions.NotImplementedException;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import net.nextcluster.driver.NextCluster;
+import net.nextcluster.driver.NextClusterLoadable;
+import net.nextcluster.driver.event.ClusterEvent;
+import net.nextcluster.driver.event.ClusterEventCallPacket;
 import net.nextcluster.driver.resource.platform.DownloadablePlatform;
 import net.nextcluster.driver.resource.platform.Platform;
 import net.nextcluster.driver.resource.platform.PlatformArgs;
@@ -38,6 +44,7 @@ import net.nextcluster.driver.resource.platform.PlatformService;
 import net.nextcluster.driver.resource.platform.paper.PaperPlatform;
 import net.nextcluster.driver.transmitter.ChannelIdPacket;
 import net.nextcluster.driver.transmitter.NetworkTransmitter;
+import net.nextcluster.driver.transmitter.RedirectPacket;
 import net.nextcluster.prevm.classloader.AccessibleClassLoader;
 import net.nextcluster.prevm.exception.NoPlatformFoundException;
 import net.nextcluster.prevm.networking.NettyClientTransmitter;
@@ -96,6 +103,24 @@ public class PreVM extends NextCluster {
                 });
 
         this.nettyClient = nettyBuilder.build();
+
+        NextCluster.instance().transmitter().listen(ClusterEventCallPacket.class, (channel, packet) -> {
+            try {
+                NextCluster.instance().eventRegistry().callLocal(JsonUtils.fromJson(packet.json(), (Class<? extends ClusterEvent>) this.classByName(packet.eventClass())));
+                NextCluster.LOGGER.info("Calling cluster event: " + packet.eventClass());
+            } catch (ClassNotFoundException ignored) {
+                NextCluster.LOGGER.warn("Received cluster event packet but could not find event class: " + packet.eventClass());
+            }
+        });
+
+        NextCluster.instance().transmitter().listen(RedirectPacket.class, (transmit, packet) -> {
+            try {
+                this.nettyClient().callPacketReceived(transmit, (Packet) JsonUtils.fromJson(packet.packetJson(), this.classByName(packet.className())));
+                NextCluster.LOGGER.info("Calling redirect packet: " + packet.className());
+            } catch (ClassNotFoundException ignored) {
+                NextCluster.LOGGER.warn("Received redirect packet but could not find packet class: " + packet.className());
+            }
+        });
     }
 
     public static void premain(String args, Instrumentation instrumentation) {

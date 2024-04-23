@@ -39,11 +39,19 @@ public class EventRegistry {
     }
 
     public void call(ClusterEvent event, EventVisibility visibility) {
-        if (visibility == EventVisibility.ALL || visibility == EventVisibility.ONLY_SELF) {
+        if (visibility == EventVisibility.ALL || visibility == EventVisibility.ONLY_SELF || visibility == EventVisibility.SAME_CHANNEL_ID) {
             this.callLocal(event);
         }
         if (visibility == EventVisibility.ALL || visibility == EventVisibility.ONLY_OTHER) {
             NextCluster.instance().transmitter().send(new ClusterEventCallPacket(event));
+        } else if (visibility == EventVisibility.SAME_CHANNEL_ID) {
+            var channelId = System.getenv("NETTY_CLIENT_ID");
+
+            if (channelId != null) {
+                NextCluster.instance().transmitter().redirect(channelId, new ClusterEventCallPacket(event));
+            } else {
+                NextCluster.LOGGER.warn("Called event with visibility 'SAME_CHANNEL_ID' but no channel environment variable is set ('NETTY_CLIENT_ID')");
+            }
         }
     }
 
