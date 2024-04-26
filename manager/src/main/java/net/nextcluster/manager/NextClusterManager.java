@@ -68,13 +68,11 @@ public class NextClusterManager extends NextCluster {
 
             try {
                 NextCluster.instance().eventRegistry().callLocal(JsonUtils.fromJson(packet.json(), (Class<? extends ClusterEvent>) Class.forName(packet.eventClass())));
-                NextCluster.LOGGER.info("Calling cluster event: " + packet.eventClass());
+                NextCluster.LOGGER.info("Calling cluster event: {}", packet.eventClass());
             } catch (ClassNotFoundException ignored) {
             }
         });
-
         transmitter().listen(RedirectPacket.class, (transmit, packet) -> ((NettyServerTransmitter) transmitter()).doRedirect(packet.id(), packet));
-
         transmitter().listen(ChannelIdPacket.class, (transmit, packet) -> ((NettyServerTransmitter) transmitter()).registerTransmitter(packet.id(), transmit));
     }
 

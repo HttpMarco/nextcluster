@@ -31,6 +31,7 @@ import io.fabric8.kubernetes.api.model.rbac.SubjectBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import net.nextcluster.manager.requirements.Assembler;
 import net.nextcluster.manager.requirements.Registry;
+import org.jetbrains.annotations.NotNull;
 
 class Initializer {
 
@@ -41,11 +42,15 @@ class Initializer {
         createRole(client);
         createRoleBinding(client);
 
-        Registry.initialize(client);
+        var registryEnv = System.getenv("registry");
+
+        if (registryEnv == null || Boolean.parseBoolean(registryEnv)) {
+            Registry.initialize(client);
+        }
         Assembler.initialize(client);
     }
 
-    private static void createServiceAccount(KubernetesClient client) {
+    private static void createServiceAccount(@NotNull KubernetesClient client) {
         // @formatter:off
         final var serviceAccount = new ServiceAccountBuilder()
             .withNewMetadata()
@@ -57,7 +62,7 @@ class Initializer {
         client.serviceAccounts().resource(serviceAccount).serverSideApply();
     }
 
-    private static void createRole(KubernetesClient client) {
+    private static void createRole(@NotNull KubernetesClient client) {
         // @formatter:off
         final var role = new RoleBuilder()
             .withNewMetadata()
@@ -76,7 +81,7 @@ class Initializer {
         client.rbac().roles().resource(role).serverSideApply();
     }
 
-    private static void createRoleBinding(KubernetesClient client) {
+    private static void createRoleBinding(@NotNull KubernetesClient client) {
         // @formatter:off
         final var roleBinding = new RoleBindingBuilder()
             .withNewMetadata()
