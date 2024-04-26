@@ -56,6 +56,8 @@ spec:
           env:
             - name: KUBERNETES_AUTH_TRYKUBECONFIG
               value: "false"
+            - name: INTERNAL_REGISTRY
+              value: "true"
           volumeMounts:
             - name: static-services
               mountPath: /static

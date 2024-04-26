@@ -42,11 +42,12 @@ class Initializer {
         createRole(client);
         createRoleBinding(client);
 
-        var registryEnv = System.getenv("registry");
+        var registryEnv = System.getenv("INTERNAL_REGISTRY");
 
         if (registryEnv == null || Boolean.parseBoolean(registryEnv)) {
             Registry.initialize(client);
         }
+
         Assembler.initialize(client);
     }
 
