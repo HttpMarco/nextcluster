@@ -112,6 +112,8 @@ public class Assembler {
                         .addToLabels("app", "assembler")
                     .endMetadata()
                     .withNewSpec()
+                        .withServiceAccountName("nextcluster")
+                        .withServiceAccount("nextcluster")
                         .addNewContainer()
                             .withName("assembler")
                             .withImage("registry.nextcluster.net/assembler:latest")

@@ -56,7 +56,7 @@ class Initializer {
         final var serviceAccount = new ServiceAccountBuilder()
             .withNewMetadata()
                 .withName(IDENTIFIER)
-                .withNamespace(IDENTIFIER)
+                .withNamespace(client.getNamespace())
             .endMetadata()
             .build();
         // @formatter:on

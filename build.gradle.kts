@@ -36,7 +36,6 @@ allprojects {
 
     repositories {
         mavenCentral()
-        maven(url = "https://nexus.bytemc.de/repository/maven-public/")
         maven(url = "https://s01.oss.sonatype.org/content/repositories/snapshots/")
         maven(url = "https://repo.waterdog.dev/snapshots")
         maven(url = "https://repo.opencollab.dev/maven-releases/")
