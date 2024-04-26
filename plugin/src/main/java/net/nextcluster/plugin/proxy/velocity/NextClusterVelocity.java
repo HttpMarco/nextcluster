@@ -59,7 +59,7 @@ import java.util.UUID;
 @Plugin(
         id = "nextcluster",
         name = "NextCluster",
-        version = "1.0.4-SNAPSHOT",
+        version = "1.0.6-SNAPSHOT",
         url = "https://nextcluster.net",
         authors = {"NextCluster"}
 )

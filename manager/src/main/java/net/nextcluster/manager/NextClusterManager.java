@@ -32,7 +32,9 @@ import net.nextcluster.driver.NextCluster;
 import net.nextcluster.driver.event.ClusterEvent;
 import net.nextcluster.driver.event.ClusterEventCallPacket;
 import net.nextcluster.driver.resource.group.NextGroup;
+import net.nextcluster.driver.transmitter.ChannelIdPacket;
 import net.nextcluster.driver.transmitter.NetworkTransmitter;
+import net.nextcluster.driver.transmitter.RedirectPacket;
 import net.nextcluster.manager.networking.NettyServerTransmitter;
 import net.nextcluster.manager.resources.group.NextGroupWatcher;
 import net.nextcluster.manager.resources.player.ManagerCloudPlayerProvider;
@@ -55,8 +57,8 @@ public class NextClusterManager extends NextCluster {
         // initialize netty server
         this.nettyServer = NettyServer.builder()
                 .withPort(NetworkTransmitter.NETTY_PORT)
+                .onInactive(transmit -> ((NettyServerTransmitter) transmitter()).unregisterTransmitter(transmit))
                 .build();
-
 
         // wait for the transmitter to be ready
         playerProvider(new ManagerCloudPlayerProvider(this.transmitter()));
@@ -70,6 +72,10 @@ public class NextClusterManager extends NextCluster {
             } catch (ClassNotFoundException ignored) {
             }
         });
+
+        transmitter().listen(RedirectPacket.class, (transmit, packet) -> ((NettyServerTransmitter) transmitter()).doRedirect(packet.id(), packet));
+
+        transmitter().listen(ChannelIdPacket.class, (transmit, packet) -> ((NettyServerTransmitter) transmitter()).registerTransmitter(packet.id(), transmit));
     }
 
     public static void main(String[] args) {
@@ -88,10 +94,5 @@ public class NextClusterManager extends NextCluster {
         LOGGER.info("Custom resources successfully applied!");
         client.resources(NextGroup.class).inform(new NextGroupWatcher());
         LOGGER.info("NextClusterManager started in {}ms!", System.currentTimeMillis() - startup);
-    }
-
-    @Override
-    public ClassLoader classLoader() {
-        throw new UnsupportedOperationException("Only available at pre-vm!");
     }
 }
