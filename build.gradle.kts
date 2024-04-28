@@ -29,14 +29,13 @@ plugins {
 
 allprojects {
     group = "net.nextcluster"
-    version = "1.0.6-SNAPSHOT"
+    version = "1.0.7-SNAPSHOT"
 
     apply(plugin = "java-library")
     apply(plugin = "maven-publish")
 
     repositories {
         mavenCentral()
-        maven(url = "https://nexus.bytemc.de/repository/maven-public/")
         maven(url = "https://s01.oss.sonatype.org/content/repositories/snapshots/")
         maven(url = "https://repo.waterdog.dev/snapshots")
         maven(url = "https://repo.opencollab.dev/maven-releases/")

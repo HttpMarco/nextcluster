@@ -12,8 +12,8 @@ import java.util.List;
 public class MinestomPlatform extends DownloadablePlatform implements PlatformArgs {
 
     public MinestomPlatform() {
-        //todo find newest version
-        super("SERVER", "MINESTOM", "https://nexus.bytemc.de/repository/maven-public/net/minestom/bootstrap/1.0.8-SNAPSHOT/bootstrap-1.0.8-SNAPSHOT.jar");
+        //todo find latest version
+        super("SERVER", "MINESTOM", "https://nexus.bytemc.de/repository/maven-all/net/minestom/bootstrap/1.1.0-SNAPSHOT/bootstrap-1.1.0-SNAPSHOT.jar");
     }
 
 
