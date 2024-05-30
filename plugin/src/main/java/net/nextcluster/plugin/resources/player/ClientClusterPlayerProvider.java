@@ -26,7 +26,7 @@ public final class ClientClusterPlayerProvider implements PlayerProvider {
     public FutureResult<Optional<ClusterPlayer>> playerAsync(UUID uniqueId) {
         var executor = new FutureResult<Optional<ClusterPlayer>>();
         NextCluster.instance().transmitter().request("nextcluster_users_fetch", new JsonObjectSerializer().append("uuid", uniqueId),
-                ClusterPlayerPacket.class, it -> executor.complete(Optional.of(it.clusterPlayer())));
+                ClusterPlayerPacket.class, it -> executor.complete(Optional.ofNullable(it.clusterPlayer())));
         return executor;
     }
 
@@ -34,7 +34,7 @@ public final class ClientClusterPlayerProvider implements PlayerProvider {
     public FutureResult<Optional<ClusterPlayer>> playerAsync(String username) {
         var executor = new FutureResult<Optional<ClusterPlayer>>();
         NextCluster.instance().transmitter().request("nextcluster_users_fetch", new JsonObjectSerializer().append("username", username),
-                ClusterPlayerPacket.class, it -> executor.complete(Optional.of(it.clusterPlayer())));
+                ClusterPlayerPacket.class, it -> executor.complete(Optional.ofNullable(it.clusterPlayer())));
         return executor;
     }
 
