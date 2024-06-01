@@ -25,12 +25,12 @@ public final class ManagerCloudPlayerProvider implements PlayerProvider {
 
         transmitter.registerResponder("nextcluster_users_fetch", (channel, props) -> {
             if (props.has("uuid")) {
-                return new ClusterPlayerPacket(this.player(props.readObject("uuid", UUID.class)).orElseThrow());
+                return new ClusterPlayerPacket(this.player(props.readObject("uuid", UUID.class)).map(DefaultClusterPlayer::new).orElse(null));
             } else if (props.has("username")) {
-                return new ClusterPlayerPacket(this.player(props.readString("username")).orElseThrow());
+                return new ClusterPlayerPacket(this.player(props.readString("username")).map(DefaultClusterPlayer::new).orElse(null));
             }
 
-            return new ClusterPlayerPacket((ClusterPlayer) null);
+            return new ClusterPlayerPacket((DefaultClusterPlayer) null);
         });
         transmitter.registerResponder("nextcluster_users_online", (channel, props) -> {
             if (props.has("uuid")) {

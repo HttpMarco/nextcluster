@@ -41,7 +41,9 @@ class Initializer {
         createRole(client);
         createRoleBinding(client);
 
-        Registry.initialize(client);
+        if (System.getenv("NO_CUSTOM_REGISTRY") == null) {
+            Registry.initialize(client);
+        }
         Assembler.initialize(client);
     }
 
@@ -50,7 +52,7 @@ class Initializer {
         final var serviceAccount = new ServiceAccountBuilder()
             .withNewMetadata()
                 .withName(IDENTIFIER)
-                .withNamespace(IDENTIFIER)
+                .withNamespace(client.getNamespace())
             .endMetadata()
             .build();
         // @formatter:on

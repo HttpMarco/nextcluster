@@ -13,9 +13,9 @@ import java.util.Objects;
 @Getter
 @Accessors(fluent = true)
 public class ClusterPlayerPacket extends Packet {
-    private final @Nullable ClusterPlayer clusterPlayer;
+    private final @Nullable DefaultClusterPlayer clusterPlayer;
 
-    public ClusterPlayerPacket(@Nullable ClusterPlayer clusterPlayer) {
+    public ClusterPlayerPacket(@Nullable DefaultClusterPlayer clusterPlayer) {
         super();
 
         this.clusterPlayer = clusterPlayer;
@@ -26,7 +26,7 @@ public class ClusterPlayerPacket extends Packet {
     public ClusterPlayerPacket(CodecBuffer buffer) {
         super(buffer);
 
-        this.clusterPlayer = buffer.readObject(ClusterPlayer.class, () -> new DefaultClusterPlayer(
+        this.clusterPlayer = buffer.readObject(DefaultClusterPlayer.class, () -> new DefaultClusterPlayer(
                 buffer.readString(),
                 buffer.readUniqueId(),
                 buffer.readString(),

@@ -29,14 +29,13 @@ plugins {
 
 allprojects {
     group = "net.nextcluster"
-    version = "1.0.6-SNAPSHOT"
+    version = "1.0.8-SNAPSHOT"
 
     apply(plugin = "java-library")
     apply(plugin = "maven-publish")
 
     repositories {
         mavenCentral()
-        maven(url = "https://nexus.bytemc.de/repository/maven-public/")
         maven(url = "https://s01.oss.sonatype.org/content/repositories/snapshots/")
         maven(url = "https://repo.waterdog.dev/snapshots")
         maven(url = "https://repo.opencollab.dev/maven-releases/")
@@ -84,7 +83,8 @@ allprojects {
             repositories {
                 maven {
                     name = "nextCluster"
-                    url = uri("https://nexus.nextcluster.net/repository/maven-snapshots/")
+                    url = uri("http://192.168.200.1:12192/repository/maven-snapshots/")
+                    isAllowInsecureProtocol=true
                     credentials {
                         username = project.property("REPOSITORY_USERNAME").toString()
                         password = project.property("REPOSITORY_PASSWORD").toString()

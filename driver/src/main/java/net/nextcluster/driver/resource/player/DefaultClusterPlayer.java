@@ -10,6 +10,10 @@ public class DefaultClusterPlayer extends AbstractClusterPlayer {
         super(name, uniqueId, currentProxyName, currentServerName);
     }
 
+    public DefaultClusterPlayer(ClusterPlayer clusterPlayer) {
+        super(clusterPlayer.name(), clusterPlayer.uniqueId(), clusterPlayer.connectedProxyName(), clusterPlayer.connectedServerName());
+    }
+
     @Override
     public void sendMessage(String message) {
         throw new NotImplementedException();
