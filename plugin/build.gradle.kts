@@ -60,7 +60,7 @@ dependencies {
     compileOnly("net.minestom:common:1.0.13-SNAPSHOT")
     compileOnly("dev.waterdog.waterdogpe:waterdog:2.0.3-SNAPSHOT")
     implementation("net.kyori:adventure-platform-bungeecord:4.3.2")
-    compileOnly("cn.nukkit:nukkit:1.0-SNAPSHOT")
+    compileOnly("cn.nukkit:nukkit:2.0.0-SNAPSHOT")
     implementation(libs.spark)
 }
 
