@@ -59,7 +59,7 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
     compileOnly("net.minestom:common:1.0.13-SNAPSHOT")
     compileOnly("dev.waterdog.waterdogpe:waterdog:2.0.3-SNAPSHOT")
-    implementation("net.kyori:adventure-platform-bungeecord:4.3.2")
+    implementation("net.kyori:adventure-platform-bungeecord:4.3.3")
     compileOnly("cn.nukkit:nukkit:2.0.0-SNAPSHOT")
     implementation(libs.spark)
 }
