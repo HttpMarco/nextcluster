@@ -1,7 +1,7 @@
 [versions]
 
 okhttp = "4.12.0"
-kubernetes = "6.12.1"
+kubernetes = "6.13.0"
 guava = "33.2.0-jre"
 gson = "2.10.1"
 
