@@ -28,7 +28,7 @@ plugins {
 
 dependencies {
     api(project(":driver"))
-    api("io.jsonwebtoken:jjwt:0.12.5")
+    api("io.jsonwebtoken:jjwt:0.12.6")
 
     implementation(libs.bundles.logger)
     annotationProcessor(libs.crd)
